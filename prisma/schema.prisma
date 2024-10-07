@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Kind {
+  NPO
+  SPO
+}
+
+enum Type {
+  BUDGET
+  NON_BUDGET
+}
+
+enum Rate {
+  SALARIED
+  HOURLY
+}
+
+enum Month {
+  JANUARY
+  FEBRUARY
+  MARCH
+  APRIL
+  MAY
+  JUNE
+  JULY
+  AUGUST
+  SEPTEMBER
+  OCTOBER
+  NOVEMBER
+  DECEMBER
+}
+
+enum MonthHalf {
+  FIRST
+  SECOND
+}
+
+model User {
+  id       String @id @default(uuid()) @db.Uuid
+  login    String @unique
+  password String
+
+  @@map("users")
+}
+
+model Group {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+  kind Kind
+  type Type
+
+  Plan Plan[]
+
+  @@map("groups")
+}
+
+model Teacher {
+  id  String @id @default(uuid()) @db.Uuid
+  fio String
+
+  Plan Plan[]
+
+  @@map("teachers")
+}
+
+model Object {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
+
+  Plan Plan[]
+
+  @@map("objects")
+}
+
+model Subject {
+  id        String    @id @default(uuid()) @db.Uuid
+  month     Month
+  monthHalf MonthHalf @map("month_half")
+  hours     Int
+  planId    String    @map("plan_id") @db.Uuid
+
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@map("subjects")
+}
+
+model Plan {
+  id        String @id @default(uuid()) @db.Uuid
+  year      String
+  rate      Rate
+  maxHours  Int    @map("max_hours")
+  objectId  String @map("object_id") @db.Uuid
+  teacherId String @map("teacher_id") @db.Uuid
+  groupId   String @map("group_id") @db.Uuid
+
+  Subject Subject[]
+
+  Object  Object  @relation(fields: [objectId], references: [id])
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  group   Group   @relation(fields: [groupId], references: [id])
+
+  @@map("plans")
+}
+
+model RevokedToken {
+  id  String @id @default(uuid()) @db.Uuid
+  jti String @unique
+
+  @@map("revoked_tokens")
+}
