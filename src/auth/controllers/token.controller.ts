@@ -8,7 +8,7 @@ import { UserJTI } from "src/utils/decorators/user-jti.decorator";
 export class TokenController {
     constructor(private readonly tokenService: TokenService) { }
 
-    @Post('new-tokens')
+    @Post('new_tokens')
     async newTokens(
         @Req() req: Request,
         @Res({ passthrough: true }) res: Response
@@ -28,7 +28,7 @@ export class TokenController {
     }
 
     @UseGuards(JwtGuard)
-    @Post('revoke-token')
+    @Post('revoke_token')
     async revokeToken(
         @Res({ passthrough: true }) res: Response,
         @UserJTI() jti: string
