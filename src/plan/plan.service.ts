@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
+import { UpdatePlanDto } from './dto/update-plan.dto'
 
 @Injectable()
 export class PlanService {
@@ -8,6 +9,17 @@ export class PlanService {
 
 	async create(dto: CreatePlanDto) {
 		const plan = await this.prismaService.plan.create({
+			data: {
+				...dto
+			}
+		})
+
+		return plan
+	}
+
+	async update(id: string, dto: UpdatePlanDto) {
+		const plan = await this.prismaService.plan.update({
+			where: { id },
 			data: {
 				...dto
 			}

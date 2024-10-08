@@ -13,6 +13,10 @@ export class CreatePlanDto {
 
 	@IsString()
 	objectId: string
+
+	@IsString()
 	teacherId: string
+
+	@IsString()
 	groupId: string
 }

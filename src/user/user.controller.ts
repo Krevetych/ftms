@@ -1,25 +1,27 @@
-import { Body, Controller, Delete, Get, Patch } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Body, Controller, Delete, Get, Patch, UseGuards } from '@nestjs/common'
+import { UserService } from './user.service'
+import { UpdateUserDto } from './dto/update-user.dto'
+import { JwtGuard } from 'src/utils/guards/jwt.guard'
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+	constructor(private readonly userService: UserService) {}
 
+	@Get('find_by_id')
+	@UseGuards(JwtGuard)
+	async findById(@Body() id: string) {
+		return this.userService.findById(id)
+	}
 
-  @Get("find_by_id")
-  async findById(@Body() id: string) {
-    return this.userService.findById(id)
-  }
+	@Patch('update')
+	@UseGuards(JwtGuard)
+	async update(@Body() id: string, data: UpdateUserDto) {
+		return this.userService.update(id, data)
+	}
 
-  @Patch("update")
-  async update(@Body() id: string, data: UpdateUserDto) {
-    return this.userService.update(id, data)
-  }
-
-  @Delete("delete")
-  async delete(id: string) {
-    return this.userService.delete(id)
-  }
-
+	@Delete('delete')
+	@UseGuards(JwtGuard)
+	async delete(id: string) {
+		return this.userService.delete(id)
+	}
 }
