@@ -35,7 +35,7 @@ export class AuthController {
 			await this.authService.login(data)
 		this.tokenService.addTokensToResponse(res, refreshToken, accessToken)
 
-		return user
+		return { accessToken, ...user }
 	}
 
 	@Post('logout')
