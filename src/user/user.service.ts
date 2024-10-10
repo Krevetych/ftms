@@ -22,6 +22,10 @@ export class UserService {
 		return user
 	}
 
+	async findAll() {
+		return await this.prismaService.user.findMany()
+	}
+
 	async create(dto: CreateUserDto) {
 		const hashPass = await hash(dto.password)
 		const { password, ...newUser } = await this.prismaService.user.create({
@@ -51,7 +55,7 @@ export class UserService {
 
 	async delete(id: string) {
 		await this.prismaService.user.delete({ where: { id } })
-		
+
 		return true
 	}
 }

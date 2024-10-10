@@ -14,6 +14,12 @@ export class UserController {
 		return this.userService.findById(id)
 	}
 
+	@Get('find_all')
+	@UseGuards(JwtGuard)
+	async findAll() {
+		return this.userService.findAll()
+	}
+
 	@Patch('update')
 	@UseGuards(JwtGuard)
 	async update(@Body() id: string, data: UpdateUserDto) {
