@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Patch, UseGuards } from '@nestjs/common'
 import { UserService } from './user.service'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
+import { UserID } from 'src/utils/decorators/user-id.decorator'
 
 @Controller('user')
 export class UserController {
@@ -9,7 +10,7 @@ export class UserController {
 
 	@Get('find_by_id')
 	@UseGuards(JwtGuard)
-	async findById(@Body() id: string) {
+	async findById(@UserID() id: string) {
 		return this.userService.findById(id)
 	}
 
