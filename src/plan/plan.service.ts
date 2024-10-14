@@ -29,7 +29,17 @@ export class PlanService {
 	}
 
 	async findAll() {
-		return await this.prismaService.plan.findMany()
+		return await this.prismaService.plan.findMany({
+			select: {
+				id: true,
+				year: true,
+				rate: true,
+				maxHours: true,
+				Object: true,
+				teacher: true,
+				group: true
+			}
+		})
 	}
 
 	async delete(id: string) {
