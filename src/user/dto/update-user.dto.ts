@@ -8,8 +8,4 @@ export class UpdateUserDto {
 	@IsString()
 	@IsOptional()
 	password?: string
-
-	@IsBoolean()
-	@IsOptional()
-	isAdmin?: boolean
 }

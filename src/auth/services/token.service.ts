@@ -93,10 +93,10 @@ export class TokenService {
 
 		const refreshOptions: ICookie = {
 			httpOnly: true,
-			domain: 'universal-hub.site',
+			domain: process.env.DOMAIN,
 			expires: refreshExpiresIn,
 			secure: true,
-			sameSite: 'lax'
+			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
 		}
 
 		this.setCookie(res, this.REFRESH_TOKEN_KEY, refreshToken, refreshOptions)
@@ -108,10 +108,10 @@ export class TokenService {
 
 		const accessOptions: ICookie = {
 			httpOnly: true,
-			domain: 'universal-hub.site',
+			domain: process.env.DOMAIN,
 			expires: accessExpiresIn,
 			secure: true,
-			sameSite: 'lax'
+			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
 		}
 
 		this.setCookie(res, this.ACCESS_TOKEN_KEY, accessToken, accessOptions)
@@ -120,20 +120,20 @@ export class TokenService {
 	removeTokensFromResponse(res: Response) {
 		const refreshOptions: ICookie = {
 			httpOnly: true,
-			domain: 'localhost',
+			domain: process.env.DOMAIN,
 			expires: new Date(0),
 			secure: true,
-			sameSite: 'none'
+			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
 		}
 
 		this.setCookie(res, this.REFRESH_TOKEN_KEY, '', refreshOptions)
 
 		const accessOptions: ICookie = {
 			httpOnly: true,
-			domain: 'localhost',
+			domain: process.env.DOMAIN,
 			expires: new Date(0),
 			secure: true,
-			sameSite: 'none'
+			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
 		}
 
 		this.setCookie(res, this.ACCESS_TOKEN_KEY, '', accessOptions)
