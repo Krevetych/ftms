@@ -93,10 +93,10 @@ export class TokenService {
 
 		const refreshOptions: ICookie = {
 			httpOnly: true,
-			domain: 'localhost',
+			domain: 'universal-hub.site',
 			expires: refreshExpiresIn,
 			secure: true,
-			sameSite: 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, this.REFRESH_TOKEN_KEY, refreshToken, refreshOptions)
@@ -108,10 +108,10 @@ export class TokenService {
 
 		const accessOptions: ICookie = {
 			httpOnly: true,
-			domain: 'localhost',
+			domain: 'universal-hub.site',
 			expires: accessExpiresIn,
 			secure: true,
-			sameSite: 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, this.ACCESS_TOKEN_KEY, accessToken, accessOptions)

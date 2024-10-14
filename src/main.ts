@@ -8,7 +8,7 @@ async function bootstrap() {
 	const port = process.env.PORT
 	app.enableShutdownHooks()
 	app.enableCors({
-			origin: 'http://localhost:3000',
+			origin: 'https://ftms.universal-hub.site',
 			credentials: true
 		})
 	app.useGlobalPipes(
