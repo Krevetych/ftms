@@ -3,6 +3,7 @@ import {
 	Controller,
 	NotFoundException,
 	Post,
+	Query,
 	Res,
 	UseGuards
 } from '@nestjs/common'
@@ -20,8 +21,8 @@ export class AuthController {
 	) {}
 
 	@Post('register')
-	async create(@Body() data: CreateUserDto) {
-		const user = await this.authService.register(data)
+	async create(@Body() data: CreateUserDto, @Query('root') root: string) {
+		const user = await this.authService.register(data, root)
 
 		return user
 	}

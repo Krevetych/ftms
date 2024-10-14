@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException
+} from '@nestjs/common'
 import { UserService } from 'src/user/user.service'
 import { TokenService } from './token.service'
 import { CreateUserDto } from 'src/user/dto/create-user.dto'
@@ -18,15 +22,19 @@ export class AuthService {
 		return { user, ...tokens }
 	}
 
-	async register(dto: CreateUserDto) {
-		const extUser = await this.userService.findByLogin(dto.login)
+	async register(dto: CreateUserDto, root: string) {
+		if (root === process.env.ROOT) {
+			const extUser = await this.userService.findByLogin(dto.login)
 
-		if (extUser) {
-			throw new BadRequestException('User already exists')
+			if (extUser) {
+				throw new BadRequestException('User already exists')
+			}
+
+			const user = await this.userService.create(dto)
+
+			return user
+		} else {
+			throw new NotFoundException('Route not found')
 		}
-
-		const user = await this.userService.create(dto)
-
-		return user
 	}
 }
