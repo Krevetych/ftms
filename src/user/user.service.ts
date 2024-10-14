@@ -22,10 +22,6 @@ export class UserService {
 		return user
 	}
 
-	async findAll() {
-		return await this.prismaService.user.findMany()
-	}
-
 	async create(dto: CreateUserDto) {
 		const hashPass = await hash(dto.password)
 		const { password, ...newUser } = await this.prismaService.user.create({

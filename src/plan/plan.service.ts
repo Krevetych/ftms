@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
+import { Month, MonthHalf } from '@prisma/client'
 
 @Injectable()
 export class PlanService {
@@ -40,6 +41,41 @@ export class PlanService {
 				group: true
 			}
 		})
+	}
+
+	async findByFilters(
+		year: string,
+		teacher: string,
+		month: Month,
+		monthHalf: MonthHalf
+	) {
+		const res = await this.prismaService.plan.findMany({
+			where: {
+				year: year,
+				teacher: {
+					fio: teacher
+				},
+				Subject: {
+					some: {
+						month: month,
+						monthHalf: monthHalf
+					}
+				}
+			},
+			include: {
+				teacher: true,
+				Subject: {
+					where: {
+						month: month,
+						monthHalf: monthHalf
+					}
+				},
+				Object: true,
+				group: true
+			}
+		})
+
+		return res
 	}
 
 	async delete(id: string) {

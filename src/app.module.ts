@@ -8,8 +8,12 @@ import { TeacherModule } from './teacher/teacher.module'
 import { ObjectModule } from './object/object.module'
 import { SubjectModule } from './subject/subject.module'
 import { PlanModule } from './plan/plan.module'
+import { ConfigModule } from '@nestjs/config'
 @Module({
 	imports: [
+		ConfigModule.forRoot({
+			envFilePath: process.env.NODE_ENV === 'prod' ? '.env.prod' : '.env.dev'
+		}),
 		JwtModule.register({
 			global: true,
 			secret: process.env.JWT_SECRET
