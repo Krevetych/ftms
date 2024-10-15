@@ -10,6 +10,9 @@ export class CreatePlanDto {
 
 	@IsNumber()
 	maxHours: number
+	
+	@IsNumber()
+	worked: number
 
 	@IsString()
 	objectId: string

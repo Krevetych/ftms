@@ -35,6 +35,12 @@ export class PlanController {
 		return await this.planService.findByFilters(year, teacher, month, monthHalf)
 	}
 
+	@Get('find_by_id')
+	@UseGuards(JwtGuard)
+	async findById(@Query('id') id: string) {
+		return await this.planService.findById(id)
+	}
+
 	@Patch('update')
 	@UseGuards(JwtGuard)
 	async update(@Body() data: UpdatePlanDto, @Query('id') id: string) {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
@@ -8,10 +8,50 @@ import { Month, MonthHalf } from '@prisma/client'
 export class PlanService {
 	constructor(private prismaService: PrismaService) {}
 
+	async findById(id: string) {
+		return await this.prismaService.plan.findUnique({
+			where: {
+				id: id
+			}
+		})
+	}
+
 	async create(dto: CreatePlanDto) {
+		const existingPlan = await this.prismaService.plan.findUnique({
+			where: {
+				year_objectId_groupId: {
+					year: dto.year,
+					objectId: dto.objectId,
+					groupId: dto.groupId
+				}
+			}
+		})
+
+		if (existingPlan) {
+			throw new BadRequestException('Plan already exists')
+		}
+
 		const plan = await this.prismaService.plan.create({
 			data: {
-				...dto
+				year: dto.year,
+				rate: dto.rate,
+				maxHours: dto.maxHours,
+				worked: dto.worked,
+				Object: {
+					connect: {
+						id: dto.objectId
+					}
+				},
+				teacher: {
+					connect: {
+						id: dto.teacherId
+					}
+				},
+				group: {
+					connect: {
+						id: dto.groupId
+					}
+				}
 			}
 		})
 
@@ -36,6 +76,7 @@ export class PlanService {
 				year: true,
 				rate: true,
 				maxHours: true,
+				worked: true,
 				Object: true,
 				teacher: true,
 				group: true
@@ -46,28 +87,22 @@ export class PlanService {
 	async findByFilters(
 		year: string,
 		teacher: string,
-		month: Month,
-		monthHalf: MonthHalf
+		month?: Month,
+		monthHalf?: MonthHalf
 	) {
 		const res = await this.prismaService.plan.findMany({
 			where: {
-				year: year,
+				year: year || undefined,
 				teacher: {
-					fio: teacher
-				},
-				Subject: {
-					some: {
-						month: month,
-						monthHalf: monthHalf
-					}
+					fio: teacher || undefined
 				}
 			},
 			include: {
 				teacher: true,
 				Subject: {
 					where: {
-						month: month,
-						monthHalf: monthHalf
+						...(month ? { month: month } : {}),
+						...(monthHalf ? { monthHalf: monthHalf } : {})
 					}
 				},
 				Object: true,
