@@ -6,6 +6,7 @@ import {
 import { PrismaService } from 'src/prisma.service'
 import { CreateSubjectDto } from './dto/create-subject.dto'
 import { UpdateSubjectDto } from './dto/update-subject.dto'
+import { Rate } from '@prisma/client'
 
 @Injectable()
 export class SubjectService {
@@ -81,6 +82,15 @@ export class SubjectService {
 			where: { id: subject.planId },
 			data: {
 				worked: {
+					decrement: subject.hours
+				}
+			}
+		})
+
+		await this.prismaService.plan.update({
+			where: { id: subject.planId },
+			data: {
+				worked: {
 					increment: dto.hours
 				}
 			}
@@ -89,8 +99,13 @@ export class SubjectService {
 		return updateSubject
 	}
 
-	async findAll() {
+	async findByRate(rate: Rate) {
 		return await this.prismaService.subject.findMany({
+			where: {
+				plan: {
+					rate: rate
+				}
+			},
 			select: {
 				id: true,
 				hours: true,

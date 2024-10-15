@@ -12,6 +12,7 @@ import { SubjectService } from './subject.service'
 import { CreateSubjectDto } from './dto/create-subject.dto'
 import { UpdateSubjectDto } from './dto/update-subject.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
+import { Rate } from '@prisma/client'
 
 @Controller('subject')
 export class SubjectController {
@@ -29,10 +30,10 @@ export class SubjectController {
 		return this.subjectService.update(id, dto)
 	}
 
-	@Get('find_all')
+	@Get('find_by_rate')
 	@UseGuards(JwtGuard)
-	async findAll() {
-		return this.subjectService.findAll()
+	async findByRate(@Query('rate') rate: Rate) {
+		return this.subjectService.findByRate(rate)
 	}
 
 	@Delete('delete')
