@@ -1,4 +1,4 @@
-import { Rate } from '@prisma/client'
+import { Rate, Status } from '@prisma/client'
 import { IsEnum, IsNumber, IsString } from 'class-validator'
 
 export class CreatePlanDto {
@@ -13,6 +13,9 @@ export class CreatePlanDto {
 	
 	@IsNumber()
 	worked: number
+
+	@IsEnum(Status)
+	status: Status
 
 	@IsString()
 	objectId: string

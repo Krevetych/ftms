@@ -1,4 +1,4 @@
-import { Month, MonthHalf } from '@prisma/client'
+import { Month, MonthHalf, Term } from '@prisma/client'
 import { IsEnum, IsNumber, IsString } from 'class-validator'
 
 export class CreateSubjectDto {
@@ -7,6 +7,17 @@ export class CreateSubjectDto {
 
 	@IsEnum(MonthHalf)
 	monthHalf: MonthHalf
+
+	@IsNumber()
+	hours: number
+
+	@IsString()
+	planId: string
+}
+
+export class CreateSubjectTermDto {
+	@IsEnum(Term)
+	term: Term
 
 	@IsNumber()
 	hours: number

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
-import { Month, MonthHalf } from '@prisma/client'
+import { Month, MonthHalf, Rate, Term } from '@prisma/client'
 
 @Injectable()
 export class PlanService {
@@ -36,6 +36,7 @@ export class PlanService {
 				year: dto.year,
 				rate: dto.rate,
 				maxHours: dto.maxHours,
+				status: dto.status,
 				worked: dto.worked,
 				Object: {
 					connect: {
@@ -77,6 +78,7 @@ export class PlanService {
 				rate: true,
 				maxHours: true,
 				worked: true,
+				status: true,
 				Object: true,
 				teacher: true,
 				group: true
@@ -87,15 +89,18 @@ export class PlanService {
 	async findByFilters(
 		year: string,
 		teacher: string,
+		rate: Rate,
 		month?: Month,
-		monthHalf?: MonthHalf
+		monthHalf?: MonthHalf,
+		term?: Term
 	) {
 		const res = await this.prismaService.plan.findMany({
 			where: {
 				year: year || undefined,
 				teacher: {
 					fio: teacher || undefined
-				}
+				},
+				rate: rate || undefined
 			},
 			include: {
 				teacher: true,
@@ -103,6 +108,11 @@ export class PlanService {
 					where: {
 						...(month ? { month: month } : {}),
 						...(monthHalf ? { monthHalf: monthHalf } : {})
+					}
+				},
+				SubjectTerm: {
+					where: {
+						...(term ? { term: term } : {})
 					}
 				},
 				Object: true,

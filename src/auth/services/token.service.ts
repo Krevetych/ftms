@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt'
 import { verify } from 'argon2'
 import { Response } from 'express'
 import { PrismaService } from 'src/prisma.service'
-import { CreateUserDto } from 'src/user/dto/create-user.dto'
+import { CreateUserDto, LoginUserDto } from 'src/user/dto/create-user.dto'
 import { UserService } from 'src/user/user.service'
 import { v4 as uuidv4 } from 'uuid'
 import { ICookie } from '../interfaces/cookie.interface'
@@ -48,7 +48,7 @@ export class TokenService {
 		return { accessToken, refreshToken }
 	}
 
-	async validateUser(dto: CreateUserDto) {
+	async validateUser(dto: LoginUserDto) {
 		const user = await this.userService.findByLogin(dto.login)
 
 		if (!user) {

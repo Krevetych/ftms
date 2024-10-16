@@ -1,4 +1,4 @@
-import { Type } from '@prisma/client'
+import { Course, Status, Type } from '@prisma/client'
 import { IsEnum, IsString } from 'class-validator'
 
 export class CreateGroupDto {
@@ -7,4 +7,10 @@ export class CreateGroupDto {
 
 	@IsEnum(Type)
 	type: Type
+
+	@IsEnum(Course)
+	course: Course
+
+	@IsEnum(Status)
+	status: Status
 }

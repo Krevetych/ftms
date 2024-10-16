@@ -12,7 +12,7 @@ import { PlanService } from './plan.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
-import { Month, MonthHalf } from '@prisma/client'
+import { Month, MonthHalf, Rate, Term } from '@prisma/client'
 
 @Controller('plan')
 export class PlanController {
@@ -29,10 +29,19 @@ export class PlanController {
 	async findByFilters(
 		@Query('year') year: string,
 		@Query('teacher') teacher: string,
+		@Query('rate') rate: Rate,
 		@Query('month') month: Month,
-		@Query('monthHalf') monthHalf: MonthHalf
+		@Query('monthHalf') monthHalf: MonthHalf,
+		@Query('term') term: Term
 	) {
-		return await this.planService.findByFilters(year, teacher, month, monthHalf)
+		return await this.planService.findByFilters(
+			year,
+			teacher,
+			rate,
+			month,
+			monthHalf,
+			term
+		)
 	}
 
 	@Get('find_by_id')

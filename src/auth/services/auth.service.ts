@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { UserService } from 'src/user/user.service'
 import { TokenService } from './token.service'
-import { CreateUserDto } from 'src/user/dto/create-user.dto'
+import { CreateUserDto, LoginUserDto } from 'src/user/dto/create-user.dto'
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
 		private tokenService: TokenService
 	) {}
 
-	async login(dto: CreateUserDto) {
+	async login(dto: LoginUserDto) {
 		const user = await this.tokenService.validateUser(dto)
 
 		const tokens = await this.tokenService.issueTokens(user.id)

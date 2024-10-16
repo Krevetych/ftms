@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { AuthService } from '../services/auth.service'
 import { TokenService } from '../services/token.service'
-import { CreateUserDto } from 'src/user/dto/create-user.dto'
+import { CreateUserDto, LoginUserDto } from 'src/user/dto/create-user.dto'
 import { Response } from 'express'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
 
@@ -29,7 +29,7 @@ export class AuthController {
 
 	@Post('login')
 	async login(
-		@Body() data: CreateUserDto,
+		@Body() data: LoginUserDto,
 		@Res({ passthrough: true }) res: Response
 	) {
 		const { accessToken, refreshToken, ...user } =

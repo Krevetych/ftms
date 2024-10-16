@@ -6,4 +6,15 @@ export class CreateUserDto {
 
 	@IsString()
 	password: string
+
+	@IsBoolean()
+	isAdmin: boolean
+}
+
+export class LoginUserDto {
+	@IsString()
+	login: string
+
+	@IsString()
+	password: string
 }

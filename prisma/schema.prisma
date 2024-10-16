@@ -19,6 +19,24 @@ enum Type {
   NON_BUDGET
 }
 
+enum Term {
+  FIRST
+  SECOND
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum Course {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+  INACTIVE
+}
+
 enum Rate {
   SALARIED
   HOURLY
@@ -31,8 +49,6 @@ enum Month {
   APRIL
   MAY
   JUNE
-  JULY
-  AUGUST
   SEPTEMBER
   OCTOBER
   NOVEMBER
@@ -45,17 +61,20 @@ enum MonthHalf {
 }
 
 model User {
-  id       String @id @default(uuid()) @db.Uuid
-  login    String @unique
+  id       String  @id @default(uuid()) @db.Uuid
+  login    String  @unique
   password String
+  isAdmin  Boolean @default(false) @map("is_admin")
 
   @@map("users")
 }
 
 model Group {
-  id   String @id @default(uuid()) @db.Uuid
-  name String
-  type Type
+  id     String @id @default(uuid()) @db.Uuid
+  name   String
+  type   Type
+  course Course
+  status Status @default(ACTIVE)
 
   Plan Plan[]
 
@@ -93,21 +112,35 @@ model Subject {
   @@map("subjects")
 }
 
+model SubjectTerm {
+  id     String @id @default(uuid()) @db.Uuid
+  term   Term
+  hours  Int
+  planId String @map("plan_id") @db.Uuid
+
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@unique([term, planId])
+  @@map("subject_terms")
+}
+
 model Plan {
   id        String @id @default(uuid()) @db.Uuid
   year      String
   rate      Rate
   maxHours  Int    @map("max_hours")
   worked    Int
+  status    Status @default(ACTIVE)
   objectId  String @map("object_id") @db.Uuid
   teacherId String @map("teacher_id") @db.Uuid
   groupId   String @map("group_id") @db.Uuid
 
   Subject Subject[]
+  SubjectTerm SubjectTerm[]
 
-  Object  Object  @relation(fields: [objectId], references: [id])
-  teacher Teacher @relation(fields: [teacherId], references: [id])
-  group   Group   @relation(fields: [groupId], references: [id])
+  Object      Object        @relation(fields: [objectId], references: [id])
+  teacher     Teacher       @relation(fields: [teacherId], references: [id])
+  group       Group         @relation(fields: [groupId], references: [id])
 
   @@unique([year, objectId, groupId])
   @@map("plans")
