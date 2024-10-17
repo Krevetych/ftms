@@ -19,10 +19,11 @@ export class PlanService {
 	async create(dto: CreatePlanDto) {
 		const existingPlan = await this.prismaService.plan.findUnique({
 			where: {
-				year_objectId_groupId: {
+				year_objectId_groupId_teacherId: {
 					year: dto.year,
 					objectId: dto.objectId,
-					groupId: dto.groupId
+					groupId: dto.groupId,
+					teacherId: dto.teacherId
 				}
 			}
 		})

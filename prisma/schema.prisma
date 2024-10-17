@@ -135,14 +135,14 @@ model Plan {
   teacherId String @map("teacher_id") @db.Uuid
   groupId   String @map("group_id") @db.Uuid
 
-  Subject Subject[]
+  Subject     Subject[]
   SubjectTerm SubjectTerm[]
 
-  Object      Object        @relation(fields: [objectId], references: [id])
-  teacher     Teacher       @relation(fields: [teacherId], references: [id])
-  group       Group         @relation(fields: [groupId], references: [id])
+  Object  Object  @relation(fields: [objectId], references: [id])
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  group   Group   @relation(fields: [groupId], references: [id])
 
-  @@unique([year, objectId, groupId])
+  @@unique([year, objectId, groupId, teacherId])
   @@map("plans")
 }
 
