@@ -12,6 +12,7 @@ import { GroupService } from './group.service'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
+import { Course, Status, Type } from '@prisma/client'
 
 @Controller('group')
 export class GroupController {
@@ -33,6 +34,16 @@ export class GroupController {
 	@UseGuards(JwtGuard)
 	async findAll() {
 		return this.groupService.findAll()
+	}
+
+	@Get('find_by_filters')
+	@UseGuards(JwtGuard)
+	async findByFilters(
+		@Query('type') type: Type,
+		@Query('course') course: Course,
+		@Query('status') status: Status
+	) {
+		return this.groupService.findByFilters(type, course, status)
 	}
 
 	@Delete('delete')

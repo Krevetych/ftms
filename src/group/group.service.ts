@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
+import { Course, Status, Type } from '@prisma/client'
 
 @Injectable()
 export class GroupService {
@@ -28,6 +29,16 @@ export class GroupService {
 
 	async findAll() {
 		return await this.prismaService.group.findMany()
+	}
+
+	async findByFilters(type?: Type, course?: Course, status?: Status) {
+		return await this.prismaService.group.findMany({
+			where: {
+				type: type || undefined,
+				course: course || undefined,
+				status: status || undefined
+			}
+		})
 	}
 
 	async delete(id: string) {

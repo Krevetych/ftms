@@ -34,7 +34,16 @@ export class AuthController {
 	) {
 		const { accessToken, refreshToken, ...user } =
 			await this.authService.login(data)
-		this.tokenService.addTokensToResponse(res, refreshToken, accessToken)
+
+		let role = ''
+
+		if (user.user.isAdmin) {
+			role = 'admin'
+		} else {
+			role = 'user'
+		}
+
+		this.tokenService.addTokensToResponse(res, refreshToken, accessToken, role)
 
 		return { accessToken, ...user }
 	}

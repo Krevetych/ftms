@@ -11,6 +11,7 @@ import { CreateUserDto, LoginUserDto } from 'src/user/dto/create-user.dto'
 import { UserService } from 'src/user/user.service'
 import { v4 as uuidv4 } from 'uuid'
 import { ICookie } from '../interfaces/cookie.interface'
+import { env } from 'process'
 
 @Injectable()
 export class TokenService {
@@ -84,7 +85,8 @@ export class TokenService {
 	addTokensToResponse(
 		res: Response,
 		refreshToken: string,
-		accessToken: string
+		accessToken: string,
+		userRole: string
 	) {
 		const refreshExpiresIn = new Date()
 		refreshExpiresIn.setDate(
@@ -115,6 +117,16 @@ export class TokenService {
 		}
 
 		this.setCookie(res, this.ACCESS_TOKEN_KEY, accessToken, accessOptions)
+
+		const roleOptions: ICookie = {
+			httpOnly: true,
+			domain: process.env.DOMAIN,
+			expires: accessExpiresIn,
+			secure: true,
+			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+		}
+
+		this.setCookie(res, 'userRole', userRole, roleOptions)
 	}
 
 	removeTokensFromResponse(res: Response) {
@@ -137,6 +149,16 @@ export class TokenService {
 		}
 
 		this.setCookie(res, this.ACCESS_TOKEN_KEY, '', accessOptions)
+
+		const roleOptions: ICookie = {
+			httpOnly: true,
+			domain: process.env.DOMAIN,
+			expires: new Date(0),
+			secure: true,
+			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+		}
+
+		this.setCookie(res, 'userRole', '', roleOptions)
 	}
 
 	async revokeToken(res: Response, jti: string) {

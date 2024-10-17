@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
-import { Month, MonthHalf, Rate, Term } from '@prisma/client'
+import { Month, MonthHalf, Rate, Status, Term } from '@prisma/client'
 
 @Injectable()
 export class PlanService {
@@ -121,6 +121,37 @@ export class PlanService {
 		})
 
 		return res
+	}
+
+	async findByPlan(
+		year?: string,
+		rate?: Rate,
+		objectId?: string,
+		status?: Status,
+		teacherId?: string,
+		groupId?: string
+	) {
+		return await this.prismaService.plan.findMany({
+			where: {
+				year: year || undefined,
+				rate: rate || undefined,
+				Object: {
+					id: objectId || undefined
+				},
+				status: status || undefined,
+				teacher: {
+					id: teacherId || undefined
+				},
+				group: {
+					id: groupId || undefined
+				}
+			},
+			include: {
+				teacher: true,
+				Object: true,
+				group: true
+			}
+		})
 	}
 
 	async delete(id: string) {

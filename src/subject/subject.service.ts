@@ -12,7 +12,7 @@ import {
 	UpdateSubjectDto,
 	UpdateSubjectTermDto
 } from './dto/update-subject.dto'
-import { Rate } from '@prisma/client'
+import { Month, MonthHalf, Rate, Term, Type } from '@prisma/client'
 
 @Injectable()
 export class SubjectService {
@@ -124,6 +124,43 @@ export class SubjectService {
 			where: {
 				plan: {
 					rate: rate
+				}
+			},
+			select: {
+				id: true,
+				hours: true,
+				month: true,
+				monthHalf: true,
+				plan: {
+					select: {
+						year: true,
+						rate: true,
+						teacher: true,
+						Object: true,
+						group: true
+					}
+				}
+			}
+		})
+	}
+
+	async findByFilters(
+		month: Month,
+		monthHalf: MonthHalf,
+		teacherId: string,
+		type: Type,
+		groupId: string
+	) {
+		return await this.prismaService.subject.findMany({
+			where: {
+				month: month || undefined,
+				monthHalf: monthHalf || undefined,
+				plan: {
+					teacherId: teacherId || undefined,
+					group: {
+						type: type || undefined
+					},
+					groupId: groupId || undefined
 				}
 			},
 			select: {
@@ -278,6 +315,40 @@ export class SubjectTermService {
 			where: {
 				plan: {
 					rate: rate
+				}
+			},
+			select: {
+				id: true,
+				term: true,
+				hours: true,
+				plan: {
+					select: {
+						year: true,
+						rate: true,
+						teacher: true,
+						Object: true,
+						group: true
+					}
+				}
+			}
+		})
+	}
+
+	async findByFilters(
+		term: Term,
+		teacherId: string,
+		type: Type,
+		groupId: string
+	) {
+		return await this.prismaService.subjectTerm.findMany({
+			where: {
+				term: term || undefined,
+				plan: {
+					teacherId: teacherId || undefined,
+					group: {
+						type: type || undefined
+					},
+					groupId: groupId || undefined
 				}
 			},
 			select: {
