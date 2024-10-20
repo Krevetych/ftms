@@ -6,13 +6,19 @@ import {
 	Patch,
 	Post,
 	Query,
-	UseGuards
+	Res,
+	UploadedFile,
+	UseGuards,
+	UseInterceptors
 } from '@nestjs/common'
 import { PlanService } from './plan.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
 import { Month, MonthHalf, Rate, Status, Term } from '@prisma/client'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { Response } from 'express'
+import { send } from 'process'
 
 @Controller('plan')
 export class PlanController {
@@ -22,6 +28,13 @@ export class PlanController {
 	@UseGuards(JwtGuard)
 	async create(@Body() dto: CreatePlanDto) {
 		return await this.planService.create(dto)
+	}
+
+	@Post('upload')
+	@UseGuards(JwtGuard)
+	@UseInterceptors(FileInterceptor('file'))
+	async upload(@UploadedFile() file: Express.Multer.File) {
+		return await this.planService.upload(file.buffer)
 	}
 
 	@Get('find_by_filters')
@@ -42,6 +55,30 @@ export class PlanController {
 			monthHalf,
 			term
 		)
+	}
+
+	@Get('unload')
+	async unload(
+		@Query('rate') rate: Rate,
+		@Query('month') month: Month,
+		@Query('monthHalf') monthHalf: MonthHalf,
+		@Query('term') term: Term,
+		@Res() res: Response
+	) {
+		const excelBuff = await this.planService.unload(
+			rate,
+			term,
+			month,
+			monthHalf
+		)
+
+		res.set({
+			'Content-Type':
+				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			'Content-Disposition': 'attachment; filename=plans.xlsx'
+		})
+
+		res.send(excelBuff)
 	}
 
 	@Get('find_by_plan')

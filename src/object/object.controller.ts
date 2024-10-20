@@ -6,12 +6,15 @@ import {
 	Patch,
 	Post,
 	Query,
-	UseGuards
+	UploadedFile,
+	UseGuards,
+	UseInterceptors
 } from '@nestjs/common'
 import { ObjectService } from './object.service'
 import { UpdateObjectDto } from './dto/update-object.dto'
 import { CreateObjectDto } from './dto/create-object.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('object')
 export class ObjectController {
@@ -23,20 +26,27 @@ export class ObjectController {
 		return this.objectService.create(data)
 	}
 
+	@Post('upload')
+	@UseGuards(JwtGuard)
+	@UseInterceptors(FileInterceptor('file'))
+	async upload(@UploadedFile() file: Express.Multer.File) {
+		return this.objectService.upload(file.buffer)
+	}
+
 	@Patch('update')
-  @UseGuards(JwtGuard)
+	@UseGuards(JwtGuard)
 	async update(@Body() data: UpdateObjectDto, @Query('id') id: string) {
 		return this.objectService.update(id, data)
 	}
 
 	@Get('find_all')
-  @UseGuards(JwtGuard)
+	@UseGuards(JwtGuard)
 	async findAll() {
 		return this.objectService.findAll()
 	}
 
 	@Delete('delete')
-  @UseGuards(JwtGuard)
+	@UseGuards(JwtGuard)
 	async delete(@Query('id') id: string) {
 		return this.objectService.delete(id)
 	}

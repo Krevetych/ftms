@@ -6,13 +6,16 @@ import {
 	Patch,
 	Post,
 	Query,
-	UseGuards
+	UploadedFile,
+	UseGuards,
+	UseInterceptors
 } from '@nestjs/common'
 import { GroupService } from './group.service'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
 import { Course, Status, Type } from '@prisma/client'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('group')
 export class GroupController {
@@ -22,6 +25,13 @@ export class GroupController {
 	@UseGuards(JwtGuard)
 	async create(@Body() data: CreateGroupDto) {
 		return this.groupService.create(data)
+	}
+
+	@Post('upload')
+	@UseGuards(JwtGuard)
+	@UseInterceptors(FileInterceptor('file'))
+	async upload(@UploadedFile() file: Express.Multer.File) {
+		return await this.groupService.upload(file.buffer)
 	}
 
 	@Patch('update')

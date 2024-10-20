@@ -6,11 +6,14 @@ import {
 	Patch,
 	Post,
 	Query,
-	UseGuards
+	UploadedFile,
+	UseGuards,
+	UseInterceptors
 } from '@nestjs/common'
 import { TeacherService } from './teacher.service'
 import { CreateTeacherDto } from './dto/create-teacher.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('teacher')
 export class TeacherController {
@@ -20,6 +23,13 @@ export class TeacherController {
 	@UseGuards(JwtGuard)
 	async create(@Body() dto: CreateTeacherDto) {
 		return await this.teacherService.create(dto)
+	}
+
+	@Post('upload')
+	@UseGuards(JwtGuard)
+	@UseInterceptors(FileInterceptor('file'))
+	async upload(@UploadedFile() file: Express.Multer.File) {
+		return await this.teacherService.upload(file.buffer)
 	}
 
 	@Patch('update')

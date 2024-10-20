@@ -9,6 +9,7 @@ import { ObjectModule } from './object/object.module'
 import { SubjectModule } from './subject/subject.module'
 import { PlanModule } from './plan/plan.module'
 import { ConfigModule } from '@nestjs/config'
+
 @Module({
 	imports: [
 		ConfigModule.forRoot({
