@@ -167,9 +167,24 @@ export class PlanService {
 	}
 
 	async delete(id: string) {
-		await this.prismaService.plan.delete({ where: { id } })
+		const relatedRecords = await this.prismaService.plan.findUnique({
+			where: { id: id },
+			include: {
+				Subject: true,
+				SubjectTerm: true
+			}
+		})
 
-		return true
+		if (
+			relatedRecords.Subject.length === 0 &&
+			relatedRecords.SubjectTerm.length === 0
+		) {
+			await this.prismaService.plan.delete({ where: { id } })
+
+			return true
+		}
+
+		throw new BadRequestException('Plan has related records')
 	}
 
 	async upload(buff: Buffer) {
