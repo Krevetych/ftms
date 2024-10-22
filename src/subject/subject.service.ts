@@ -43,6 +43,10 @@ export class SubjectService {
 			throw new NotFoundException('Plan not found')
 		}
 
+		if (dto.hours < 0) {
+			throw new BadRequestException('Invalid hours')
+		}
+
 		if (plan.maxHours < plan.worked + dto.hours) {
 			throw new BadRequestException('Max hours exceeded')
 		}
@@ -232,6 +236,10 @@ export class SubjectTermService {
 
 		if (!plan) {
 			throw new NotFoundException('Plan not found')
+		}
+
+		if (dto.hours < 0) {
+			throw new BadRequestException('Invalid hours')
 		}
 
 		if (plan.maxHours < plan.worked + dto.hours) {

@@ -59,6 +59,7 @@ export class PlanController {
 
 	@Get('unload')
 	async unload(
+		@Query('year') year: string,
 		@Query('rate') rate: Rate,
 		@Query('month') month: Month,
 		@Query('monthHalf') monthHalf: MonthHalf,
@@ -66,6 +67,7 @@ export class PlanController {
 		@Res() res: Response
 	) {
 		const excelBuff = await this.planService.unload(
+			year,
 			rate,
 			term,
 			month,

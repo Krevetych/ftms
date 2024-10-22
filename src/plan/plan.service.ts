@@ -66,6 +66,16 @@ export class PlanService {
 	}
 
 	async update(id: string, dto: UpdatePlanDto) {
+		const existingPlan = await this.prismaService.plan.findUnique({
+			where: {
+				id
+			}
+		})
+
+		if (existingPlan) {
+			throw new BadRequestException('Plan already exists')
+		}
+
 		const plan = await this.prismaService.plan.update({
 			where: { id },
 			data: {
@@ -171,56 +181,89 @@ export class PlanService {
 		const sheetName = workbook.SheetNames[0]
 		const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
 
-		for (const row of worksheet) {
-			const objectRecord = await this.prismaService.object.findFirst({
-				where: { name: row['object'] }
-			})
-
-			const teacherRecord = await this.prismaService.teacher.findFirst({
-				where: { fio: row['teacher'] }
-			})
-
-			const groupRecord = await this.prismaService.group.findFirst({
-				where: { name: row['group'] }
-			})
-
-			const rateEnum =
-				row['rate'] === 'Тарифицированная' ? Rate.SALARIED : Rate.HOURLY
-			const statusEnum =
-				row['status'] === 'Активная' ? Status.ACTIVE : Status.INACTIVE
-
-			await this.prismaService.plan.create({
-				data: {
-					year: row['year'],
-					rate: rateEnum,
-					maxHours: row['maxHours'],
-					worked: 0,
-					status: statusEnum,
-					Object: {
-						connect: {
-							id: objectRecord.id
-						}
-					},
-					teacher: {
-						connect: {
-							id: teacherRecord.id
-						}
-					},
-					group: {
-						connect: {
-							id: groupRecord.id
-						}
-					}
-				}
-			})
+		const headers = {
+			object: 'предмет',
+			teacher: 'преподаватель',
+			group: 'группа',
+			rate: 'тариф',
+			maxHours: 'макс. часы'
 		}
 
-		return { message: 'Success' }
+		try {
+			await this.prismaService.$transaction(async prisma => {
+				for (let i = 0; i < worksheet.length; i++) {
+					const row = worksheet[i]
+
+					const objectRecord = await prisma.object.findFirst({
+						where: { name: row[headers.object] }
+					})
+					if (!objectRecord) {
+						throw new NotFoundException(
+							`Не найдено: Поле - "предмет", строка - "${i + 1}"`
+						)
+					}
+
+					const teacherRecord = await prisma.teacher.findFirst({
+						where: { fio: row[headers.teacher] }
+					})
+					if (!teacherRecord) {
+						throw new NotFoundException(
+							`Не найдено: Поле - "преподаватель", строка - "${i + 1}"`
+						)
+					}
+
+					const groupRecord = await prisma.group.findFirst({
+						where: { name: row[headers.group] }
+					})
+					if (!groupRecord) {
+						throw new NotFoundException(
+							`Не найдено: Поле - "группа", строка - "${i + 1}"`
+						)
+					}
+
+					const rateEnum =
+						row[headers.rate] === 'Тарифицированная'
+							? Rate.SALARIED
+							: Rate.HOURLY
+					const year = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+
+					await prisma.plan.create({
+						data: {
+							year: year,
+							rate: rateEnum,
+							maxHours: row[headers.maxHours],
+							worked: 0,
+							status: Status.ACTIVE,
+							Object: {
+								connect: { id: objectRecord.id }
+							},
+							teacher: {
+								connect: { id: teacherRecord.id }
+							},
+							group: {
+								connect: { id: groupRecord.id }
+							}
+						}
+					})
+				}
+			})
+			return { message: 'Success' }
+		} catch (error) {
+			throw error
+		}
 	}
 
-	async unload(rate: Rate, term?: Term, month?: Month, monthHalf?: MonthHalf) {
+	async unload(
+		year: string,
+		rate: Rate,
+		term?: Term,
+		month?: Month,
+		monthHalf?: MonthHalf
+	) {
+
 		const plans = await this.prismaService.plan.findMany({
 			where: {
+				year: year,
 				rate: rate
 			},
 			include: {
@@ -246,7 +289,6 @@ export class PlanService {
 		}
 
 		const worksheetData: any[] = []
-		const mergeCells: any[] = []
 
 		const monthNames = {
 			[Month.JANUARY]: 'Январь',
@@ -273,8 +315,8 @@ export class PlanService {
 
 		const titleText =
 			rate === Rate.SALARIED
-				? `Тарифицированная (${term ? termNames[term] : '1 или 2 семестр'})`
-				: `Почасовая (${month ? monthNames[month] : ''}, ${monthHalf ? monthHalfNames[monthHalf] : ''})`
+				? `Тарифицированная (${term ? termNames[term] : ''}, ${year})`
+				: `Почасовая (${month ? monthNames[month] : ''}, ${monthHalf ? monthHalfNames[monthHalf] : ''}, , ${year})`
 
 		worksheetData.push([titleText, ''])
 

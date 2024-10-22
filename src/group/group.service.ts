@@ -1,16 +1,26 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { Course, Status, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
-import { type } from 'os'
+import { PrismaClientValidationError } from '@prisma/client/runtime/library'
 
 @Injectable()
 export class GroupService {
 	constructor(private prismaService: PrismaService) {}
 
 	async create(dto: CreateGroupDto) {
+		const existingGroup = await this.prismaService.group.findUnique({
+			where: {
+				name: dto.name
+			}
+		})
+
+		if (existingGroup) {
+			throw new BadRequestException('Group already exists')
+		}
+
 		const group = await this.prismaService.group.create({
 			data: {
 				...dto
@@ -21,6 +31,16 @@ export class GroupService {
 	}
 
 	async update(id: string, dto: UpdateGroupDto) {
+		const existingGroup = await this.prismaService.group.findUnique({
+			where: {
+				id
+			}
+		})
+
+		if (existingGroup) {
+			throw new BadRequestException('Group already exists')
+		}
+
 		const group = await this.prismaService.group.update({
 			where: { id },
 			data: dto
@@ -30,7 +50,11 @@ export class GroupService {
 	}
 
 	async findAll() {
-		return await this.prismaService.group.findMany()
+		return await this.prismaService.group.findMany({
+			orderBy: {
+				name: 'asc'
+			}
+		})
 	}
 
 	async findByFilters(type?: Type, course?: Course, status?: Status) {
@@ -39,14 +63,25 @@ export class GroupService {
 				type: type || undefined,
 				course: course || undefined,
 				status: status || undefined
+			},
+			orderBy: {
+				name: 'asc'
 			}
 		})
 	}
 
 	async delete(id: string) {
-		await this.prismaService.group.delete({ where: { id } })
+		const relatedRecords = await this.prismaService.plan.findMany({
+			where: { groupId: id }
+		})
 
-		return true
+		if (relatedRecords.length === 0) {
+			await this.prismaService.group.delete({ where: { id } })
+
+			return true
+		}
+
+		throw new BadRequestException('Group has related records')
 	}
 
 	async upload(buff: Buffer) {
@@ -68,20 +103,40 @@ export class GroupService {
 			'-': 'INACTIVE'
 		}
 
-		const statusMapping: { [key: string]: string } = {
-			Активная: 'ACTIVE',
-			Выпуск: 'INACTIVE'
+		const headers = {
+			name: 'название',
+			type: 'тип',
+			course: 'курс'
 		}
 
 		for (const row of worksheet) {
-			await this.prismaService.group.create({
-				data: {
-					name: row['name'],
-					type: typeMapping[row['type']] as Type,
-					course: courseMapping[row['course']] as Course,
-					status: statusMapping[row['status']] as Status
+			try {
+				const normalizedGroupName: string = row[headers.name]
+					.trim()
+					.toLowerCase()
+
+				const existingGroup = await this.prismaService.group.findUnique({
+					where: { name: row[headers.name] }
+				})
+
+				if (existingGroup) {
+					const existingGroupName = existingGroup.name.trim().toLowerCase()
+					if (existingGroupName === normalizedGroupName) {
+						continue
+					}
 				}
-			})
+
+				await this.prismaService.group.create({
+					data: {
+						name: row[headers.name],
+						type: typeMapping[row[headers.type]] as Type,
+						course: courseMapping[row[headers.course]] as Course,
+						status: Status.ACTIVE
+					}
+				})
+			} catch (error) {
+				throw new BadRequestException("Can't create group")
+			}
 		}
 
 		return { message: 'Success' }

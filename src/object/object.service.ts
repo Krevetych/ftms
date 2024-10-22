@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreateObjectDto } from './dto/create-object.dto'
 import { UpdateObjectDto } from './dto/update-object.dto'
@@ -9,6 +9,16 @@ export class ObjectService {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async create(dto: CreateObjectDto) {
+		const existingObject = await this.prismaService.object.findUnique({
+			where: {
+				name: dto.name
+			}
+		})
+
+		if (existingObject) {
+			throw new BadRequestException('Object already exists')
+		}
+
 		const object = await this.prismaService.object.create({
 			data: {
 				...dto
@@ -19,6 +29,16 @@ export class ObjectService {
 	}
 
 	async update(id: string, dto: UpdateObjectDto) {
+		const existingObject = await this.prismaService.object.findUnique({
+			where: {
+				id
+			}
+		})
+
+		if (existingObject) {
+			throw new BadRequestException('Object already exists')
+		}
+
 		const object = await this.prismaService.object.update({
 			where: { id },
 			data: {
@@ -30,13 +50,25 @@ export class ObjectService {
 	}
 
 	async findAll() {
-		return await this.prismaService.object.findMany()
+		return await this.prismaService.object.findMany({
+			orderBy: {
+				name: 'asc'
+			}
+		})
 	}
 
 	async delete(id: string) {
-		await this.prismaService.object.delete({ where: { id } })
+		const relatedRecords = await this.prismaService.plan.findMany({
+			where: { objectId: id }
+		})
 
-		return true
+		if (relatedRecords.length === 0) {
+			await this.prismaService.object.delete({ where: { id } })
+
+			return true
+		}
+
+		throw new BadRequestException('Object has related records')
 	}
 
 	async upload(buff: Buffer) {
@@ -44,12 +76,37 @@ export class ObjectService {
 		const sheetName = workbook.SheetNames[0]
 		const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
 
+		const headers = {
+			name: 'название'
+		}
+
 		for (const row of worksheet) {
-			await this.prismaService.object.create({
-				data: {
-					name: row['name']
+			try {
+				const normalizedObjectName: string = row[headers.name]
+					.trim()
+					.toLowerCase()
+
+				const existingObject = await this.prismaService.object.findUnique({
+					where: {
+						name: row[headers.name]
+					}
+				})
+
+				if (existingObject) {
+					const existingObjectName = existingObject.name.trim().toLowerCase()
+					if (existingObjectName === normalizedObjectName) {
+						continue
+					}
 				}
-			})
+
+				await this.prismaService.object.create({
+					data: {
+						name: row[headers.name]
+					}
+				})
+			} catch (error) {
+				throw new BadRequestException("Can't create object")
+			}
 		}
 
 		return { message: 'Success' }
