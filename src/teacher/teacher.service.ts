@@ -9,9 +9,11 @@ export class TeacherService {
 	constructor(private prismaService: PrismaService) {}
 
 	async create(dto: CreateTeacherDto) {
+		const trimFio = dto.fio.trim().replace(/\s+/g, ' ');
+
 		const existingTeacher = await this.prismaService.teacher.findUnique({
 			where: {
-				fio: dto.fio
+				fio: trimFio
 			}
 		})
 
@@ -21,7 +23,8 @@ export class TeacherService {
 
 		const teacher = await this.prismaService.teacher.create({
 			data: {
-				...dto
+				...dto,
+				fio: trimFio
 			}
 		})
 
@@ -39,10 +42,13 @@ export class TeacherService {
 			throw new BadRequestException('Teacher already exists')
 		}
 
+		const trimFio = dto.fio.trim().replace(/\s+/g, ' ');
+
 		const teacher = await this.prismaService.teacher.update({
 			where: { id },
 			data: {
-				...dto
+				...dto,
+				fio: trimFio
 			}
 		})
 

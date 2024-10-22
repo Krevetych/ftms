@@ -14,9 +14,6 @@ export class CreatePlanDto {
 	@IsNumber()
 	worked: number
 
-	@IsEnum(Status)
-	status: Status
-
 	@IsString()
 	objectId: string
 

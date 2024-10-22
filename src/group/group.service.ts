@@ -4,16 +4,17 @@ import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { Course, Status, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
-import { PrismaClientValidationError } from '@prisma/client/runtime/library'
 
 @Injectable()
 export class GroupService {
 	constructor(private prismaService: PrismaService) {}
 
 	async create(dto: CreateGroupDto) {
+		const trimName = dto.name.trim().replace(/\s+/g, ' ');
+
 		const existingGroup = await this.prismaService.group.findUnique({
 			where: {
-				name: dto.name
+				name: trimName
 			}
 		})
 
@@ -23,7 +24,8 @@ export class GroupService {
 
 		const group = await this.prismaService.group.create({
 			data: {
-				...dto
+				...dto,
+				name: trimName
 			}
 		})
 
@@ -41,9 +43,14 @@ export class GroupService {
 			throw new BadRequestException('Group already exists')
 		}
 
+		const trimName = dto.name.trim().replace(/\s+/g, ' ');
+
 		const group = await this.prismaService.group.update({
 			where: { id },
-			data: dto
+			data: {
+				...dto,
+				name: trimName
+			}
 		})
 
 		return group

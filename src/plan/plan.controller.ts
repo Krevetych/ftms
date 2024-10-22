@@ -41,7 +41,6 @@ export class PlanController {
 	@UseGuards(JwtGuard)
 	async findByFilters(
 		@Query('year') year: string,
-		@Query('teacher') teacher: string,
 		@Query('rate') rate: Rate,
 		@Query('month') month: Month,
 		@Query('monthHalf') monthHalf: MonthHalf,
@@ -49,7 +48,6 @@ export class PlanController {
 	) {
 		return await this.planService.findByFilters(
 			year,
-			teacher,
 			rate,
 			month,
 			monthHalf,

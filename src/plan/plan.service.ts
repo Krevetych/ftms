@@ -42,7 +42,7 @@ export class PlanService {
 				year: dto.year,
 				rate: dto.rate,
 				maxHours: dto.maxHours,
-				status: dto.status,
+				status: Status.ACTIVE,
 				worked: dto.worked,
 				Object: {
 					connect: {
@@ -104,7 +104,6 @@ export class PlanService {
 
 	async findByFilters(
 		year: string,
-		teacher: string,
 		rate: Rate,
 		month?: Month,
 		monthHalf?: MonthHalf,
@@ -113,9 +112,6 @@ export class PlanService {
 		const res = await this.prismaService.plan.findMany({
 			where: {
 				year: year || undefined,
-				teacher: {
-					fio: teacher || undefined
-				},
 				rate: rate || undefined
 			},
 			include: {
@@ -260,7 +256,6 @@ export class PlanService {
 		month?: Month,
 		monthHalf?: MonthHalf
 	) {
-
 		const plans = await this.prismaService.plan.findMany({
 			where: {
 				year: year,

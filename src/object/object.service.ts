@@ -9,9 +9,11 @@ export class ObjectService {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async create(dto: CreateObjectDto) {
+		const trimName = dto.name.trim().replace(/\s+/g, ' ')
+
 		const existingObject = await this.prismaService.object.findUnique({
 			where: {
-				name: dto.name
+				name: trimName
 			}
 		})
 
@@ -21,7 +23,8 @@ export class ObjectService {
 
 		const object = await this.prismaService.object.create({
 			data: {
-				...dto
+				...dto,
+				name: trimName
 			}
 		})
 
@@ -39,10 +42,13 @@ export class ObjectService {
 			throw new BadRequestException('Object already exists')
 		}
 
+		const trimName = dto.name.trim().replace(/\s+/g, ' ')
+
 		const object = await this.prismaService.object.update({
 			where: { id },
 			data: {
-				...dto
+				...dto,
+				name: trimName
 			}
 		})
 
