@@ -4,13 +4,14 @@ import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { Course, Status, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
+import { type } from 'os'
 
 @Injectable()
 export class GroupService {
 	constructor(private prismaService: PrismaService) {}
 
 	async create(dto: CreateGroupDto) {
-		const trimName = dto.name.trim().replace(/\s+/g, ' ');
+		const trimName = dto.name.trim().replace(/\s+/g, ' ')
 
 		const existingGroup = await this.prismaService.group.findUnique({
 			where: {
@@ -43,7 +44,7 @@ export class GroupService {
 			throw new BadRequestException('Group already exists')
 		}
 
-		const trimName = dto.name.trim().replace(/\s+/g, ' ');
+		const trimName = dto.name.trim().replace(/\s+/g, ' ')
 
 		const group = await this.prismaService.group.update({
 			where: { id },
@@ -142,6 +143,13 @@ export class GroupService {
 					}
 				})
 			} catch (error) {
+				const requiredHeaders = [headers.name, headers.type, headers.course]
+
+				for (const header of requiredHeaders) {
+					if (row[header] === undefined) {
+						throw new BadRequestException(`Заголовок "${header}" не найден`)
+					}
+				}
 				throw new BadRequestException("Can't create group")
 			}
 		}

@@ -7,11 +7,10 @@ import { JwtService } from '@nestjs/jwt'
 import { verify } from 'argon2'
 import { Response } from 'express'
 import { PrismaService } from 'src/prisma.service'
-import { CreateUserDto, LoginUserDto } from 'src/user/dto/create-user.dto'
+import { LoginUserDto } from 'src/user/dto/create-user.dto'
 import { UserService } from 'src/user/user.service'
 import { v4 as uuidv4 } from 'uuid'
 import { ICookie } from '../interfaces/cookie.interface'
-import { env } from 'process'
 
 @Injectable()
 export class TokenService {
@@ -98,7 +97,7 @@ export class TokenService {
 			domain: process.env.DOMAIN,
 			expires: refreshExpiresIn,
 			secure: true,
-			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, this.REFRESH_TOKEN_KEY, refreshToken, refreshOptions)
@@ -113,7 +112,7 @@ export class TokenService {
 			domain: process.env.DOMAIN,
 			expires: accessExpiresIn,
 			secure: true,
-			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, this.ACCESS_TOKEN_KEY, accessToken, accessOptions)
@@ -123,7 +122,7 @@ export class TokenService {
 			domain: process.env.DOMAIN,
 			expires: accessExpiresIn,
 			secure: true,
-			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, 'userRole', userRole, roleOptions)
@@ -135,7 +134,7 @@ export class TokenService {
 			domain: process.env.DOMAIN,
 			expires: new Date(0),
 			secure: true,
-			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, this.REFRESH_TOKEN_KEY, '', refreshOptions)
@@ -145,7 +144,7 @@ export class TokenService {
 			domain: process.env.DOMAIN,
 			expires: new Date(0),
 			secure: true,
-			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, this.ACCESS_TOKEN_KEY, '', accessOptions)
@@ -155,7 +154,7 @@ export class TokenService {
 			domain: process.env.DOMAIN,
 			expires: new Date(0),
 			secure: true,
-			sameSite: process.env.NODE_ENV === 'prod' ? 'lax' : 'none'
+			sameSite: 'lax'
 		}
 
 		this.setCookie(res, 'userRole', '', roleOptions)

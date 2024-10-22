@@ -9,7 +9,7 @@ export class TeacherService {
 	constructor(private prismaService: PrismaService) {}
 
 	async create(dto: CreateTeacherDto) {
-		const trimFio = dto.fio.trim().replace(/\s+/g, ' ');
+		const trimFio = dto.fio.trim().replace(/\s+/g, ' ')
 
 		const existingTeacher = await this.prismaService.teacher.findUnique({
 			where: {
@@ -42,7 +42,7 @@ export class TeacherService {
 			throw new BadRequestException('Teacher already exists')
 		}
 
-		const trimFio = dto.fio.trim().replace(/\s+/g, ' ');
+		const trimFio = dto.fio.trim().replace(/\s+/g, ' ')
 
 		const teacher = await this.prismaService.teacher.update({
 			where: { id },
@@ -111,7 +111,11 @@ export class TeacherService {
 					}
 				})
 			} catch (error) {
-				throw new BadRequestException("Can't create teacher")
+				if (row[headers.fio] === undefined) {
+					throw new BadRequestException(`Заголовок "${headers.fio}" не найден`)
+				} else {
+					throw new BadRequestException("Can't create teacher")
+				}
 			}
 		}
 

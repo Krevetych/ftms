@@ -111,6 +111,9 @@ export class ObjectService {
 					}
 				})
 			} catch (error) {
+				if (row[headers.name] === undefined) {
+					throw new BadRequestException(`Заголовок "${headers.name}" не найден`)
+				}
 				throw new BadRequestException("Can't create object")
 			}
 		}
