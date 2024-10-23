@@ -6,10 +6,10 @@ import {
 	UnauthorizedException,
 	UseGuards
 } from '@nestjs/common'
-import { TokenService } from '../services/token.service'
 import { Request, Response } from 'express'
-import { JwtGuard } from 'src/utils/guards/jwt.guard'
 import { UserJTI } from 'src/utils/decorators/user-jti.decorator'
+import { JwtGuard } from 'src/utils/guards/jwt.guard'
+import { TokenService } from '../services/token.service'
 
 @Controller('token')
 export class TokenController {
@@ -31,13 +31,7 @@ export class TokenController {
 		const { accessToken, refreshToken, ...user } =
 			await this.tokenService.getNewTokens(refreshTokenFromCookie)
 
-		let role = ''
-
-		if (user.user.isAdmin) {
-			role = 'admin'
-		} else {
-			role = 'user'
-		}
+		const role = user.user.isAdmin ? 'admin' : 'user'
 
 		this.tokenService.addTokensToResponse(res, refreshToken, accessToken, role)
 

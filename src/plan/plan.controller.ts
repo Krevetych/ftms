@@ -19,6 +19,7 @@ import { Month, MonthHalf, Rate, Status, Term } from '@prisma/client'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Response } from 'express'
 import { send } from 'process'
+import { FiltersPlanDto } from './dto/filters-plan.dto'
 
 @Controller('plan')
 export class PlanController {
@@ -39,19 +40,13 @@ export class PlanController {
 
 	@Get('find_by_filters')
 	@UseGuards(JwtGuard)
-	async findByFilters(
-		@Query('year') year: string,
-		@Query('rate') rate: Rate,
-		@Query('month') month: Month,
-		@Query('monthHalf') monthHalf: MonthHalf,
-		@Query('term') term: Term
-	) {
+	async findByFilters(@Query() filters: FiltersPlanDto) {
 		return await this.planService.findByFilters(
-			year,
-			rate,
-			month,
-			monthHalf,
-			term
+			filters.year,
+			filters.rate,
+			filters.month,
+			filters.monthHalf,
+			filters.term
 		)
 	}
 

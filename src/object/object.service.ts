@@ -21,38 +21,36 @@ export class ObjectService {
 			throw new BadRequestException('Object already exists')
 		}
 
-		const object = await this.prismaService.object.create({
+		return await this.prismaService.object.create({
 			data: {
 				...dto,
 				name: trimName
 			}
 		})
-
-		return object
 	}
 
 	async update(id: string, dto: UpdateObjectDto) {
-		const existingObject = await this.prismaService.object.findUnique({
+		const trimName = dto.name.trim().replace(/\s+/g, ' ')
+
+		const object = await this.prismaService.object.findUnique({
 			where: {
-				id
+				name: trimName
 			}
 		})
 
-		if (existingObject) {
+		if (object && object.id !== id) {
 			throw new BadRequestException('Object already exists')
 		}
 
-		const trimName = dto.name.trim().replace(/\s+/g, ' ')
-
-		const object = await this.prismaService.object.update({
-			where: { id },
+		return await this.prismaService.object.update({
+			where: {
+				id
+			},
 			data: {
 				...dto,
 				name: trimName
 			}
 		})
-
-		return object
 	}
 
 	async findAll() {
@@ -86,8 +84,12 @@ export class ObjectService {
 			name: 'название'
 		}
 
-		for (const row of worksheet) {
-			try {
+		await this.prismaService.$transaction(async prisma => {
+			for (const row of worksheet) {
+				if (row[headers.name] === undefined) {
+					throw new BadRequestException(`Заголовок "${headers.name}" не найден`)
+				}
+
 				const normalizedObjectName: string = row[headers.name]
 					.trim()
 					.toLowerCase()
@@ -110,13 +112,8 @@ export class ObjectService {
 						name: row[headers.name]
 					}
 				})
-			} catch (error) {
-				if (row[headers.name] === undefined) {
-					throw new BadRequestException(`Заголовок "${headers.name}" не найден`)
-				}
-				throw new BadRequestException("Can't create object")
 			}
-		}
+		})
 
 		return { message: 'Success' }
 	}

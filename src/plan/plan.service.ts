@@ -66,16 +66,6 @@ export class PlanService {
 	}
 
 	async update(id: string, dto: UpdatePlanDto) {
-		const existingPlan = await this.prismaService.plan.findUnique({
-			where: {
-				id
-			}
-		})
-
-		if (existingPlan) {
-			throw new BadRequestException('Plan already exists')
-		}
-
 		const plan = await this.prismaService.plan.update({
 			where: { id },
 			data: {

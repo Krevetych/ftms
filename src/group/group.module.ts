@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { GroupService } from './group.service'
-import { GroupController } from './group.controller'
-import { PrismaService } from 'src/prisma.service'
 import { TokenService } from 'src/auth/services/token.service'
+import { PrismaService } from 'src/prisma.service'
 import { UserService } from 'src/user/user.service'
+import { GroupController } from './group.controller'
+import { GroupService } from './group.service'
 
 @Module({
 	controllers: [GroupController],

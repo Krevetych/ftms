@@ -1,17 +1,9 @@
-import {
-	Body,
-	Controller,
-	NotFoundException,
-	Post,
-	Query,
-	Res,
-	UseGuards
-} from '@nestjs/common'
+import { Body, Controller, Post, Query, Res, UseGuards } from '@nestjs/common'
+import { Response } from 'express'
+import { CreateUserDto, LoginUserDto } from 'src/user/dto/create-user.dto'
+import { JwtGuard } from 'src/utils/guards/jwt.guard'
 import { AuthService } from '../services/auth.service'
 import { TokenService } from '../services/token.service'
-import { CreateUserDto, LoginUserDto } from 'src/user/dto/create-user.dto'
-import { Response } from 'express'
-import { JwtGuard } from 'src/utils/guards/jwt.guard'
 
 @Controller('auth')
 export class AuthController {
@@ -35,13 +27,7 @@ export class AuthController {
 		const { accessToken, refreshToken, ...user } =
 			await this.authService.login(data)
 
-		let role = ''
-
-		if (user.user.isAdmin) {
-			role = 'admin'
-		} else {
-			role = 'user'
-		}
+		const role = user.user.isAdmin ? 'admin' : 'user'
 
 		this.tokenService.addTokensToResponse(res, refreshToken, accessToken, role)
 

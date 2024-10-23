@@ -10,7 +10,6 @@ import { PrismaService } from 'src/prisma.service'
 import { LoginUserDto } from 'src/user/dto/create-user.dto'
 import { UserService } from 'src/user/user.service'
 import { v4 as uuidv4 } from 'uuid'
-import { ICookie } from '../interfaces/cookie.interface'
 
 @Injectable()
 export class TokenService {
@@ -66,18 +65,13 @@ export class TokenService {
 		return resUser
 	}
 
-	private setCookie(
-		res: Response,
-		key: string,
-		token: string,
-		options: ICookie
-	) {
+	private setCookie(res: Response, key: string, token: string, expires: Date) {
 		return res.cookie(key, token, {
-			httpOnly: options.httpOnly,
-			domain: options.domain,
-			expires: options.expires,
-			secure: options.secure,
-			sameSite: options.sameSite
+			httpOnly: true,
+			domain: process.env.DOMAIN,
+			expires: expires,
+			secure: true,
+			sameSite: 'lax'
 		})
 	}
 
@@ -92,76 +86,34 @@ export class TokenService {
 			refreshExpiresIn.getDate() + this.EXPIRE_DATE_REFRESH_TOKEN
 		)
 
-		const refreshOptions: ICookie = {
-			httpOnly: true,
-			domain: process.env.DOMAIN,
-			expires: refreshExpiresIn,
-			secure: true,
-			sameSite: 'lax'
-		}
-
-		this.setCookie(res, this.REFRESH_TOKEN_KEY, refreshToken, refreshOptions)
+		this.setCookie(res, this.REFRESH_TOKEN_KEY, refreshToken, refreshExpiresIn)
 
 		const accessExpiresIn = new Date()
 		accessExpiresIn.setHours(
 			accessExpiresIn.getHours() + this.EXPIRE_DATE_ACCESS_TOKEN
 		)
 
-		const accessOptions: ICookie = {
-			httpOnly: true,
-			domain: process.env.DOMAIN,
-			expires: accessExpiresIn,
-			secure: true,
-			sameSite: 'lax'
-		}
+		this.setCookie(res, this.ACCESS_TOKEN_KEY, accessToken, accessExpiresIn)
 
-		this.setCookie(res, this.ACCESS_TOKEN_KEY, accessToken, accessOptions)
-
-		const roleOptions: ICookie = {
-			httpOnly: true,
-			domain: process.env.DOMAIN,
-			expires: accessExpiresIn,
-			secure: true,
-			sameSite: 'lax'
-		}
-
-		this.setCookie(res, 'userRole', userRole, roleOptions)
+		this.setCookie(res, 'userRole', userRole, accessExpiresIn)
 	}
 
 	removeTokensFromResponse(res: Response) {
-		const refreshOptions: ICookie = {
-			httpOnly: true,
-			domain: process.env.DOMAIN,
-			expires: new Date(0),
-			secure: true,
-			sameSite: 'lax'
-		}
+		this.setCookie(res, this.REFRESH_TOKEN_KEY, '', new Date(0))
 
-		this.setCookie(res, this.REFRESH_TOKEN_KEY, '', refreshOptions)
+		this.setCookie(res, this.ACCESS_TOKEN_KEY, '', new Date(0))
 
-		const accessOptions: ICookie = {
-			httpOnly: true,
-			domain: process.env.DOMAIN,
-			expires: new Date(0),
-			secure: true,
-			sameSite: 'lax'
-		}
-
-		this.setCookie(res, this.ACCESS_TOKEN_KEY, '', accessOptions)
-
-		const roleOptions: ICookie = {
-			httpOnly: true,
-			domain: process.env.DOMAIN,
-			expires: new Date(0),
-			secure: true,
-			sameSite: 'lax'
-		}
-
-		this.setCookie(res, 'userRole', '', roleOptions)
+		this.setCookie(res, 'userRole', '', new Date(0))
 	}
 
 	async revokeToken(res: Response, jti: string) {
-		await this.prismaService.revokedToken.create({ data: { jti } })
+		const existingToken = await this.prismaService.revokedToken.findUnique({
+			where: { jti }
+		})
+
+		if (!existingToken) {
+			await this.prismaService.revokedToken.create({ data: { jti } })
+		}
 
 		this.removeTokensFromResponse(res)
 

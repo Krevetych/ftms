@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { TeacherService } from './teacher.service'
-import { TeacherController } from './teacher.controller'
-import { PrismaService } from 'src/prisma.service'
 import { TokenService } from 'src/auth/services/token.service'
+import { PrismaService } from 'src/prisma.service'
 import { UserService } from 'src/user/user.service'
+import { TeacherController } from './teacher.controller'
+import { TeacherService } from './teacher.service'
 
 @Module({
 	controllers: [TeacherController],

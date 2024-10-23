@@ -5,6 +5,8 @@ import { UpdateGroupDto } from './dto/update-group.dto'
 import { Course, Status, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
 import { type } from 'os'
+import { group } from 'console'
+import { create } from 'domain'
 
 @Injectable()
 export class GroupService {
@@ -34,27 +36,25 @@ export class GroupService {
 	}
 
 	async update(id: string, dto: UpdateGroupDto) {
+		const trimName = dto.name.trim().replace(/\s+/g, ' ')
+
 		const existingGroup = await this.prismaService.group.findUnique({
 			where: {
-				id
+				name: trimName
 			}
 		})
 
-		if (existingGroup) {
+		if (existingGroup && existingGroup.id !== id) {
 			throw new BadRequestException('Group already exists')
 		}
 
-		const trimName = dto.name.trim().replace(/\s+/g, ' ')
-
-		const group = await this.prismaService.group.update({
+		return await this.prismaService.group.update({
 			where: { id },
 			data: {
 				...dto,
 				name: trimName
 			}
 		})
-
-		return group
 	}
 
 	async findAll() {
@@ -117,13 +117,20 @@ export class GroupService {
 			course: 'курс'
 		}
 
-		for (const row of worksheet) {
-			try {
+		await this.prismaService.$transaction(async prisma => {
+			for (const row of worksheet) {
+				const requiredHeaders = [headers.name, headers.type, headers.course]
+				for (const header of requiredHeaders) {
+					if (row[header] === undefined) {
+						throw new BadRequestException(`Заголовок "${header}" не найден`)
+					}
+				}
+
 				const normalizedGroupName: string = row[headers.name]
 					.trim()
 					.toLowerCase()
 
-				const existingGroup = await this.prismaService.group.findUnique({
+				const existingGroup = await prisma.group.findUnique({
 					where: { name: row[headers.name] }
 				})
 
@@ -134,7 +141,7 @@ export class GroupService {
 					}
 				}
 
-				await this.prismaService.group.create({
+				await prisma.group.create({
 					data: {
 						name: row[headers.name],
 						type: typeMapping[row[headers.type]] as Type,
@@ -142,17 +149,8 @@ export class GroupService {
 						status: Status.ACTIVE
 					}
 				})
-			} catch (error) {
-				const requiredHeaders = [headers.name, headers.type, headers.course]
-
-				for (const header of requiredHeaders) {
-					if (row[header] === undefined) {
-						throw new BadRequestException(`Заголовок "${header}" не найден`)
-					}
-				}
-				throw new BadRequestException("Can't create group")
 			}
-		}
+		})
 
 		return { message: 'Success' }
 	}
