@@ -16,7 +16,6 @@ import { UpdateGroupDto } from './dto/update-group.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
 import { Course, Status, Type } from '@prisma/client'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { FiltersGroupDto } from './dto/filters-group.dto'
 
 @Controller('group')
 export class GroupController {
@@ -49,12 +48,12 @@ export class GroupController {
 
 	@Get('find_by_filters')
 	@UseGuards(JwtGuard)
-	async findByFilters(@Query() filters: FiltersGroupDto) {
-		return this.groupService.findByFilters(
-			filters.type,
-			filters.course,
-			filters.status
-		)
+	async findByFilters(
+		@Query('type') type: Type,
+		@Query('course') course: Course,
+		@Query('status') status: Status
+	) {
+		return this.groupService.findByFilters(type, course, status)
 	}
 
 	@Delete('delete')

@@ -18,8 +18,6 @@ import { JwtGuard } from 'src/utils/guards/jwt.guard'
 import { Month, MonthHalf, Rate, Status, Term } from '@prisma/client'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Response } from 'express'
-import { send } from 'process'
-import { FiltersPlanDto } from './dto/filters-plan.dto'
 
 @Controller('plan')
 export class PlanController {
@@ -40,13 +38,19 @@ export class PlanController {
 
 	@Get('find_by_filters')
 	@UseGuards(JwtGuard)
-	async findByFilters(@Query() filters: FiltersPlanDto) {
+	async findByFilters(
+		@Query('year') year: string,
+		@Query('rate') rate: Rate,
+		@Query('month') month: Month,
+		@Query('monthHalf') monthHalf: MonthHalf,
+		@Query('term') term: Term
+	) {
 		return await this.planService.findByFilters(
-			filters.year,
-			filters.rate,
-			filters.month,
-			filters.monthHalf,
-			filters.term
+			year,
+			rate,
+			month,
+			monthHalf,
+			term
 		)
 	}
 

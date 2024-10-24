@@ -8,6 +8,9 @@ import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
 import { Month, MonthHalf, Rate, Status, Term, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
+import { group } from 'console'
+import { type } from 'os'
+import { Subject, reduce } from 'rxjs'
 
 @Injectable()
 export class PlanService {
@@ -66,14 +69,27 @@ export class PlanService {
 	}
 
 	async update(id: string, dto: UpdatePlanDto) {
-		const plan = await this.prismaService.plan.update({
+		const existingPlan = await this.prismaService.plan.findUnique({
+			where: {
+				year_objectId_groupId_teacherId: {
+					year: dto.year,
+					objectId: dto.objectId,
+					groupId: dto.groupId,
+					teacherId: dto.teacherId
+				}
+			}
+		})
+
+		if (existingPlan && existingPlan.id !== id) {
+			throw new BadRequestException('Plan already exists')
+		}
+
+		return await this.prismaService.plan.update({
 			where: { id },
 			data: {
 				...dto
 			}
 		})
-
-		return plan
 	}
 
 	async findAll() {
@@ -322,33 +338,92 @@ export class PlanService {
 
 		worksheetData.push(['ФИО Преподавателя', 'Количество часов'])
 
+		// Переменные для подсчета сумм
+		let budgetTotal = 0
+		let nonBudgetTotal = 0
+		let npoTotal = 0
+
 		worksheetData.push(['Бюджет', ''])
 
 		plans.forEach(plan => {
+			// Если SubjectTerm не пуст, суммируем часы по нему, иначе по Subject
+			let totalHours = 0
+			if (plan.SubjectTerm.length > 0) {
+				totalHours = plan.SubjectTerm.reduce(
+					(sum, subjectTerm) => sum + subjectTerm.hours,
+					0
+				)
+			} else {
+				totalHours = plan.Subject.reduce(
+					(sum, subject) => sum + subject.hours,
+					0
+				)
+			}
+
 			if (plan.group?.type === Type.BUDGET) {
-				worksheetData.push([plan.teacher?.fio || '', plan.worked || 0])
+				worksheetData.push([plan.teacher?.fio || '', totalHours])
+				budgetTotal += totalHours
 			}
 		})
+
+		// Добавляем строку с итоговой суммой по бюджету
+		worksheetData.push(['Итого (Бюджет)', budgetTotal])
 
 		worksheetData.push([])
 
 		worksheetData.push(['Внебюджет', ''])
 
 		plans.forEach(plan => {
+			// Если SubjectTerm не пуст, суммируем часы по нему, иначе по Subject
+			let totalHours = 0
+			if (plan.SubjectTerm.length > 0) {
+				totalHours = plan.SubjectTerm.reduce(
+					(sum, subjectTerm) => sum + subjectTerm.hours,
+					0
+				)
+			} else {
+				totalHours = plan.Subject.reduce(
+					(sum, subject) => sum + subject.hours,
+					0
+				)
+			}
+
 			if (plan.group?.type === Type.NON_BUDGET) {
-				worksheetData.push([plan.teacher?.fio || '', plan.worked || 0])
+				worksheetData.push([plan.teacher?.fio || '', totalHours])
+				nonBudgetTotal += totalHours
 			}
 		})
+
+		// Добавляем строку с итоговой суммой по внебюджету
+		worksheetData.push(['Итого (Внебюджет)', nonBudgetTotal])
 
 		worksheetData.push([])
 
 		worksheetData.push(['НПО', ''])
 
 		plans.forEach(plan => {
+			// Если SubjectTerm не пуст, суммируем часы по нему, иначе по Subject
+			let totalHours = 0
+			if (plan.SubjectTerm.length > 0) {
+				totalHours = plan.SubjectTerm.reduce(
+					(sum, subjectTerm) => sum + subjectTerm.hours,
+					0
+				)
+			} else {
+				totalHours = plan.Subject.reduce(
+					(sum, subject) => sum + subject.hours,
+					0
+				)
+			}
+
 			if (plan.group?.type === Type.NPO) {
-				worksheetData.push([plan.teacher?.fio || '', plan.worked || 0])
+				worksheetData.push([plan.teacher?.fio || '', totalHours])
+				npoTotal += totalHours
 			}
 		})
+
+		// Добавляем строку с итоговой суммой по НПО
+		worksheetData.push(['Итого (НПО)', npoTotal])
 
 		const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
 

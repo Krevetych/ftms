@@ -4,9 +4,6 @@ import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { Course, Status, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
-import { type } from 'os'
-import { group } from 'console'
-import { create } from 'domain'
 
 @Injectable()
 export class GroupService {
@@ -28,7 +25,8 @@ export class GroupService {
 		const group = await this.prismaService.group.create({
 			data: {
 				...dto,
-				name: trimName
+				name: trimName,
+				status: Status.ACTIVE
 			}
 		})
 
