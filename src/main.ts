@@ -8,7 +8,7 @@ async function bootstrap() {
 	const port = process.env.PORT
 	app.enableShutdownHooks()
 	app.enableCors({
-		origin: process.env.ORIGIN,
+		origin: true,
 		credentials: true
 	})
 	app.useGlobalPipes(
