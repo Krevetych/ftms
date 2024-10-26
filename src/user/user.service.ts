@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreateUserDto } from './dto/create-user.dto'
-import { hash } from 'argon2'
-import { UpdateUserDto } from './dto/update-user.dto'
+import { hash, verify } from 'argon2'
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto'
 
 @Injectable()
 export class UserService {
@@ -47,6 +47,25 @@ export class UserService {
 		})
 
 		return updatedUser
+	}
+
+	async updatePassword(id: string, dto: UpdateUserPasswordDto) {
+		const { password, ...user } = await this.prismaService.user.findUnique({
+			where: { id }
+		})
+
+		const isValid = await verify(password, dto.oldPassword)
+
+		if (!isValid) {
+			throw new BadRequestException('Invalid password')
+		}
+
+		return await this.prismaService.user.update({
+			where: { id },
+			data: {
+				password: await hash(dto.newPassword)
+			}
+		})
 	}
 
 	async delete(id: string) {

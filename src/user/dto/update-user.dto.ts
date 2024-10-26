@@ -9,3 +9,14 @@ export class UpdateUserDto {
 	@IsOptional()
 	password?: string
 }
+
+export class UpdateUserPasswordDto {
+	@IsString()
+	oldPassword: string
+
+	@IsString()
+	newPassword: string
+
+	@IsString()
+	confirmPassword: string
+}

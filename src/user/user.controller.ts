@@ -1,6 +1,16 @@
-import { Body, Controller, Delete, Get, Patch, UseGuards } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Patch,
+	Post,
+	Put,
+	Query,
+	UseGuards
+} from '@nestjs/common'
 import { UserService } from './user.service'
-import { UpdateUserDto } from './dto/update-user.dto'
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
 import { UserID } from 'src/utils/decorators/user-id.decorator'
 
@@ -20,9 +30,18 @@ export class UserController {
 		return this.userService.update(id, data)
 	}
 
+	@Put('update_password')
+	@UseGuards(JwtGuard)
+	async updatePassword(
+		@UserID() id: string,
+		@Body() data: UpdateUserPasswordDto
+	) {
+		return this.userService.updatePassword(id, data)
+	}
+
 	@Delete('delete')
 	@UseGuards(JwtGuard)
-	async delete(id: string) {
+	async delete(@Query('id') id: string) {
 		return this.userService.delete(id)
 	}
 }
