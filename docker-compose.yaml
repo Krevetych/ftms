@@ -26,7 +26,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: sh -c "pnpx prisma migrate deploy && pnpm start:prod"
+    command: >
+      sh -c "pnpx prisma migrate deploy &&
+             pnpm start:prod & 
+             sleep 5 && 
+             curl -s -X POST http://localhost:8080/auth/register?root=${ROOT} -H 'Content-Type: application/json' -d '{\"login\":\"завуч\",\"password\":\"admin\", \"isAdmin\": true}' && 
+             curl -s -X POST http://localhost:8080/auth/register?root=${ROOT} -H 'Content-Type: application/json' -d '{\"login\":\"бухгалтер\",\"password\":\"user\", \"isAdmin\": false}' &&
+             wait -n"
 
 volumes:
   postgres_data:

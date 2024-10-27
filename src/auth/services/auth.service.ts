@@ -15,7 +15,9 @@ export class AuthService {
 	) {}
 
 	async login(dto: LoginUserDto) {
-		const user = await this.tokenService.validateUser(dto)
+		const data = { ...dto, login: dto.login.toLowerCase() }
+
+		const user = await this.tokenService.validateUser(data)
 
 		const tokens = await this.tokenService.issueTokens(user.id)
 
@@ -26,7 +28,9 @@ export class AuthService {
 		this.validateRoot(root)
 		await this.checkIfUserExists(dto.login)
 
-		const user = await this.userService.create(dto)
+		const data = { ...dto, login: dto.login.toLowerCase() }
+
+		const user = await this.userService.create(data)
 
 		return user
 	}

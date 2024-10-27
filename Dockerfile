@@ -16,4 +16,6 @@ RUN pnpm run build
 
 EXPOSE 8080
 
+RUN apk add --no-cache curl
+
 CMD ["pnpm", "start:prod"]
