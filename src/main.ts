@@ -7,10 +7,6 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
 	const port = process.env.PORT
 	app.enableShutdownHooks()
-	app.enableCors({
-		origin: true,
-		credentials: true
-	})
 	app.useGlobalPipes(
 		new ValidationPipe({
 			transform: true,
@@ -18,6 +14,7 @@ async function bootstrap() {
 		})
 	)
 	app.use(cookieParser())
+	app.setGlobalPrefix('api')
 
 	await app.listen(port)
 }
