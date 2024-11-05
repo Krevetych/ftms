@@ -30,8 +30,8 @@ services:
       sh -c "pnpx prisma migrate deploy &&
              pnpm start:prod & 
              sleep 5 && 
-             curl -s -X POST http://localhost:8080/auth/register?root=${ROOT} -H 'Content-Type: application/json' -d '{\"login\":\"завуч\",\"password\":\"admin\", \"isAdmin\": true}' && 
-             curl -s -X POST http://localhost:8080/auth/register?root=${ROOT} -H 'Content-Type: application/json' -d '{\"login\":\"бухгалтер\",\"password\":\"user\", \"isAdmin\": false}' &&
+             curl -s -X POST http://localhost:8080/api/auth/register?root=${ROOT} -H 'Content-Type: application/json' -d '{\"login\":\"завуч\",\"password\":\"admin\", \"isAdmin\": true}' && 
+             curl -s -X POST http://localhost:8080/api/auth/register?root=${ROOT} -H 'Content-Type: application/json' -d '{\"login\":\"бухгалтер\",\"password\":\"user\", \"isAdmin\": false}' &&
              wait -n"
 
 volumes:
