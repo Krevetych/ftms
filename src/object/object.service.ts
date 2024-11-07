@@ -55,6 +55,20 @@ export class ObjectService {
 
 	async findAll() {
 		return await this.prismaService.object.findMany({
+			where: {
+				isDeleted: false
+			},
+			orderBy: {
+				name: 'asc'
+			}
+		})
+	}
+
+	async findAllD() {
+		return await this.prismaService.object.findMany({
+			where: {
+				isDeleted: true
+			},
 			orderBy: {
 				name: 'asc'
 			}
@@ -67,7 +81,12 @@ export class ObjectService {
 		})
 
 		if (relatedRecords.length === 0) {
-			await this.prismaService.object.delete({ where: { id } })
+			await this.prismaService.object.update({
+				where: { id },
+				data: {
+					isDeleted: true
+				}
+			})
 
 			return true
 		}

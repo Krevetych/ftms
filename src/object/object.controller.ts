@@ -45,6 +45,12 @@ export class ObjectController {
 		return this.objectService.findAll()
 	}
 
+	@Get('find_all_d')
+	@UseGuards(JwtGuard)
+	async findAllD() {
+		return this.objectService.findAllD()
+	}
+
 	@Delete('delete')
 	@UseGuards(JwtGuard)
 	async delete(@Query('id') id: string) {

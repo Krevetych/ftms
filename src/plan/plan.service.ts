@@ -6,11 +6,8 @@ import {
 import { PrismaService } from 'src/prisma.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
-import { Month, MonthHalf, Rate, Status, Term, Type } from '@prisma/client'
+import { Month, MonthHalf, Rate, Term, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
-import { group } from 'console'
-import { type } from 'os'
-import { Subject, reduce } from 'rxjs'
 
 @Injectable()
 export class PlanService {
@@ -19,7 +16,8 @@ export class PlanService {
 	async findById(id: string) {
 		return await this.prismaService.plan.findUnique({
 			where: {
-				id: id
+				id: id,
+				isDeleted: false
 			}
 		})
 	}
@@ -45,7 +43,6 @@ export class PlanService {
 				year: dto.year,
 				rate: dto.rate,
 				maxHours: dto.maxHours,
-				status: Status.ACTIVE,
 				worked: dto.worked,
 				Object: {
 					connect: {
@@ -94,13 +91,33 @@ export class PlanService {
 
 	async findAll() {
 		return await this.prismaService.plan.findMany({
+			where: {
+				isDeleted: false
+			},
 			select: {
 				id: true,
 				year: true,
 				rate: true,
 				maxHours: true,
 				worked: true,
-				status: true,
+				Object: true,
+				teacher: true,
+				group: true
+			}
+		})
+	}
+
+	async findAllD() {
+		return await this.prismaService.plan.findMany({
+			where: {
+				isDeleted: true
+			},
+			select: {
+				id: true,
+				year: true,
+				rate: true,
+				maxHours: true,
+				worked: true,
 				Object: true,
 				teacher: true,
 				group: true
@@ -118,7 +135,8 @@ export class PlanService {
 		const res = await this.prismaService.plan.findMany({
 			where: {
 				year: year || undefined,
-				rate: rate || undefined
+				rate: rate || undefined,
+				isDeleted: false
 			},
 			include: {
 				teacher: true,
@@ -145,7 +163,6 @@ export class PlanService {
 		year?: string,
 		rate?: Rate,
 		objectId?: string,
-		status?: Status,
 		teacherId?: string,
 		groupId?: string
 	) {
@@ -153,10 +170,10 @@ export class PlanService {
 			where: {
 				year: year || undefined,
 				rate: rate || undefined,
+				isDeleted: false,
 				Object: {
 					id: objectId || undefined
 				},
-				status: status || undefined,
 				teacher: {
 					id: teacherId || undefined
 				},
@@ -185,7 +202,12 @@ export class PlanService {
 			relatedRecords.Subject.length === 0 &&
 			relatedRecords.SubjectTerm.length === 0
 		) {
-			await this.prismaService.plan.delete({ where: { id } })
+			await this.prismaService.plan.update({
+				where: { id },
+				data: {
+					isDeleted: true
+				}
+			})
 
 			return true
 		}
@@ -250,7 +272,6 @@ export class PlanService {
 							rate: rateEnum,
 							maxHours: row[headers.maxHours],
 							worked: 0,
-							status: Status.ACTIVE,
 							Object: {
 								connect: { id: objectRecord.id }
 							},
@@ -280,7 +301,8 @@ export class PlanService {
 		const plans = await this.prismaService.plan.findMany({
 			where: {
 				year: year,
-				rate: rate
+				rate: rate,
+				isDeleted: false
 			},
 			include: {
 				teacher: true,
@@ -338,7 +360,6 @@ export class PlanService {
 
 		worksheetData.push(['ФИО Преподавателя', 'Количество часов'])
 
-		// Переменные для подсчета сумм
 		let budgetTotal = 0
 		let nonBudgetTotal = 0
 		let npoTotal = 0
@@ -346,7 +367,6 @@ export class PlanService {
 		worksheetData.push(['Бюджет', ''])
 
 		plans.forEach(plan => {
-			// Если SubjectTerm не пуст, суммируем часы по нему, иначе по Subject
 			let totalHours = 0
 			if (plan.SubjectTerm.length > 0) {
 				totalHours = plan.SubjectTerm.reduce(
@@ -366,7 +386,6 @@ export class PlanService {
 			}
 		})
 
-		// Добавляем строку с итоговой суммой по бюджету
 		worksheetData.push(['Итого (Бюджет)', budgetTotal])
 
 		worksheetData.push([])
@@ -374,7 +393,6 @@ export class PlanService {
 		worksheetData.push(['Внебюджет', ''])
 
 		plans.forEach(plan => {
-			// Если SubjectTerm не пуст, суммируем часы по нему, иначе по Subject
 			let totalHours = 0
 			if (plan.SubjectTerm.length > 0) {
 				totalHours = plan.SubjectTerm.reduce(
@@ -394,7 +412,6 @@ export class PlanService {
 			}
 		})
 
-		// Добавляем строку с итоговой суммой по внебюджету
 		worksheetData.push(['Итого (Внебюджет)', nonBudgetTotal])
 
 		worksheetData.push([])
@@ -402,7 +419,6 @@ export class PlanService {
 		worksheetData.push(['НПО', ''])
 
 		plans.forEach(plan => {
-			// Если SubjectTerm не пуст, суммируем часы по нему, иначе по Subject
 			let totalHours = 0
 			if (plan.SubjectTerm.length > 0) {
 				totalHours = plan.SubjectTerm.reduce(
@@ -422,7 +438,6 @@ export class PlanService {
 			}
 		})
 
-		// Добавляем строку с итоговой суммой по НПО
 		worksheetData.push(['Итого (НПО)', npoTotal])
 
 		const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)

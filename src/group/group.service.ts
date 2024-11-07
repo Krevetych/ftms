@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
-import { Course, Status, Type } from '@prisma/client'
+import { Course, Type } from '@prisma/client'
 import * as XLSX from 'xlsx'
 
 @Injectable()
@@ -25,8 +25,7 @@ export class GroupService {
 		const group = await this.prismaService.group.create({
 			data: {
 				...dto,
-				name: trimName,
-				status: Status.ACTIVE
+				name: trimName
 			}
 		})
 
@@ -57,18 +56,32 @@ export class GroupService {
 
 	async findAll() {
 		return await this.prismaService.group.findMany({
+			where: {
+				isDeleted: false
+			},
 			orderBy: {
 				name: 'asc'
 			}
 		})
 	}
 
-	async findByFilters(type?: Type, course?: Course, status?: Status) {
+	async findAllD() {
+		return await this.prismaService.group.findMany({
+			where: {
+				isDeleted: true
+			},
+			orderBy: {
+				name: 'asc'
+			}
+		})
+	}
+
+	async findByFilters(type?: Type, course?: Course) {
 		return await this.prismaService.group.findMany({
 			where: {
 				type: type || undefined,
 				course: course || undefined,
-				status: status || undefined
+				isDeleted: false
 			},
 			orderBy: {
 				name: 'asc'
@@ -82,7 +95,10 @@ export class GroupService {
 		})
 
 		if (relatedRecords.length === 0) {
-			await this.prismaService.group.delete({ where: { id } })
+			await this.prismaService.group.update({
+				where: { id },
+				data: { isDeleted: true }
+			})
 
 			return true
 		}
@@ -143,8 +159,7 @@ export class GroupService {
 					data: {
 						name: row[headers.name],
 						type: typeMapping[row[headers.type]] as Type,
-						course: courseMapping[row[headers.course]] as Course,
-						status: Status.ACTIVE
+						course: courseMapping[row[headers.course]] as Course
 					}
 				})
 			}

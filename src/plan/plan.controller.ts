@@ -15,7 +15,7 @@ import { PlanService } from './plan.service'
 import { CreatePlanDto } from './dto/create-plan.dto'
 import { UpdatePlanDto } from './dto/update-plan.dto'
 import { JwtGuard } from 'src/utils/guards/jwt.guard'
-import { Month, MonthHalf, Rate, Status, Term } from '@prisma/client'
+import { Month, MonthHalf, Rate, Term } from '@prisma/client'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Response } from 'express'
 
@@ -86,7 +86,6 @@ export class PlanController {
 		@Query('year') year: string,
 		@Query('rate') rate: Rate,
 		@Query('objectId') objectId: string,
-		@Query('status') status: Status,
 		@Query('teacherId') teacherId: string,
 		@Query('groupId') groupId: string
 	) {
@@ -94,7 +93,6 @@ export class PlanController {
 			year,
 			rate,
 			objectId,
-			status,
 			teacherId,
 			groupId
 		)
@@ -116,6 +114,12 @@ export class PlanController {
 	@UseGuards(JwtGuard)
 	async findAll() {
 		return await this.planService.findAll()
+	}
+
+	@Get('find_all_d')
+	@UseGuards(JwtGuard)
+	async findAllD() {
+		return await this.planService.findAllD()
 	}
 
 	@Delete('delete')

@@ -1,4 +1,4 @@
-import { Rate, Status } from '@prisma/client'
+import { Rate } from '@prisma/client'
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class UpdatePlanDto {
@@ -13,10 +13,6 @@ export class UpdatePlanDto {
 	@IsNumber()
 	@IsOptional()
 	maxHours?: number
-
-	@IsEnum(Status)
-	@IsOptional()
-	status?: Status
 
 	@IsString()
 	@IsOptional()

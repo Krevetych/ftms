@@ -57,6 +57,20 @@ export class TeacherService {
 
 	async findAll() {
 		return await this.prismaService.teacher.findMany({
+			where: {
+				isDeleted: false
+			},
+			orderBy: {
+				fio: 'asc'
+			}
+		})
+	}
+
+	async findAllD() {
+		return await this.prismaService.teacher.findMany({
+			where: {
+				isDeleted: true
+			},
 			orderBy: {
 				fio: 'asc'
 			}
@@ -69,7 +83,12 @@ export class TeacherService {
 		})
 
 		if (relatedRecords.length === 0) {
-			await this.prismaService.teacher.delete({ where: { id } })
+			await this.prismaService.teacher.update({
+				where: { id },
+				data: {
+					isDeleted: true
+				}
+			})
 
 			return true
 		}

@@ -1,4 +1,4 @@
-import { Rate, Status } from '@prisma/client'
+import { Rate } from '@prisma/client'
 import { IsEnum, IsNumber, IsString } from 'class-validator'
 
 export class CreatePlanDto {

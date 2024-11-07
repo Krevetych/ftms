@@ -44,6 +44,12 @@ export class TeacherController {
 		return await this.teacherService.findAll()
 	}
 
+	@Get('find_all_d')
+	@UseGuards(JwtGuard)
+	async findAllD() {
+		return await this.teacherService.findAllD()
+	}
+
 	@Delete('delete')
 	@UseGuards(JwtGuard)
 	async delete(@Query('id') id: string) {

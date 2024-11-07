@@ -1,4 +1,4 @@
-import { Course, Status, Type } from '@prisma/client'
+import { Course, Type } from '@prisma/client'
 import { IsEnum, IsOptional, IsString } from 'class-validator'
 
 export class UpdateGroupDto {
@@ -13,8 +13,4 @@ export class UpdateGroupDto {
 	@IsEnum(Course)
 	@IsOptional()
 	course?: Course
-
-	@IsEnum(Status)
-	@IsOptional()
-	status?: Status
 }
