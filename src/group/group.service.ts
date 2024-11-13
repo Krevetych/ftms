@@ -106,6 +106,23 @@ export class GroupService {
 		throw new BadRequestException('Group has related records')
 	}
 
+	async forceDelete(id: string) {
+		await this.prismaService.group.delete({
+			where: { id }
+		})
+
+		return true
+	}
+
+	async restore(id: string) {
+		await this.prismaService.group.update({
+			where: { id },
+			data: { isDeleted: false }
+		})
+
+		return true
+	}
+
 	async upload(buff: Buffer) {
 		const workbook = XLSX.read(buff, { type: 'buffer' })
 		const sheetName = workbook.SheetNames[0]

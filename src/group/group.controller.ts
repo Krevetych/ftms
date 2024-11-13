@@ -5,6 +5,7 @@ import {
 	Get,
 	Patch,
 	Post,
+	Put,
 	Query,
 	UploadedFile,
 	UseGuards,
@@ -65,5 +66,17 @@ export class GroupController {
 	@UseGuards(JwtGuard)
 	async delete(@Query('id') id: string) {
 		return this.groupService.delete(id)
+	}
+
+	@Delete('force_delete')
+	@UseGuards(JwtGuard)
+	async forceDelete(@Query('id') id: string) {
+		return this.groupService.forceDelete(id)
+	}
+
+	@Put('restore')
+	@UseGuards(JwtGuard)
+	async restore(@Query('id') id: string) {
+		return this.groupService.restore(id)
 	}
 }

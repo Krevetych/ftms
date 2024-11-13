@@ -70,7 +70,7 @@ export class TokenService {
 			httpOnly: true,
 			domain: process.env.DOMAIN,
 			expires: expires,
-			secure: false,
+			secure: true,
 			sameSite: 'lax'
 		})
 	}

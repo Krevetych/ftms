@@ -94,6 +94,25 @@ export class ObjectService {
 		throw new BadRequestException('Object has related records')
 	}
 
+	async forceDelete(id: string) {
+		await this.prismaService.object.delete({
+			where: { id }
+		})
+
+		return true
+	}
+
+	async restore(id: string) {
+		await this.prismaService.object.update({
+			where: { id },
+			data: {
+				isDeleted: false
+			}
+		})
+
+		return true
+	}
+
 	async upload(buff: Buffer) {
 		const workbook = XLSX.read(buff, { type: 'buffer' })
 		const sheetName = workbook.SheetNames[0]

@@ -5,6 +5,7 @@ import {
 	Get,
 	Patch,
 	Post,
+	Put,
 	Query,
 	UploadedFile,
 	UseGuards,
@@ -54,5 +55,17 @@ export class TeacherController {
 	@UseGuards(JwtGuard)
 	async delete(@Query('id') id: string) {
 		return await this.teacherService.delete(id)
+	}
+
+	@Delete('force_delete')
+	@UseGuards(JwtGuard)
+	async forceDelete(@Query('id') id: string) {
+		return await this.teacherService.forceDelete(id)
+	}
+
+	@Put('restore')
+	@UseGuards(JwtGuard)
+	async restore(@Query('id') id: string) {
+		return await this.teacherService.restore(id)
 	}
 }
